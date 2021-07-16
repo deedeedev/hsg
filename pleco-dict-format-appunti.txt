@@ -1,0 +1,10 @@
+headword	pinyin	definition
+
+
+
+
+
+
+一	yi1	one ❖ floor; ceiling $  PINYIN yī JYUTPING jat1 $  STORY [1] $  ❖ Also known as: floor. ceiling. $  FRAME 1, LESSON 1, BOOK 1, PAGE 19 $  NAVIGATION ↑Lesson 1↑ (本书1第1课​) »two» (二​)
+
+VEDI: ~/build/heisig/userdict.xsl

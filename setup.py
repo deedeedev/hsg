@@ -15,7 +15,7 @@ setup(
         'console_scripts': [
             'hsg = heisigtools:cli',
             'hsg-tatoeba = heisigtatoeba:cli',
-            'hsg-cc = ccedict:search',
+            'hsg-cc = ccedictsearch:search',
         ],
     },
 )

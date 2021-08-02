@@ -5,7 +5,7 @@ import sys
 import csv
 import json
 import re
-import requests
+import requests # type: ignore
 
 from rich import print
 

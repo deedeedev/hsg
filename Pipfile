@@ -13,8 +13,13 @@ ht = {editable = true, path = "."}
 hsg = {editable = true, path = "."}
 tabulate = "*"
 wcwidth = "*"
+pypinyin = "*"
+mypy = "*"
+types-tabulate = "*"
+pysimplegui = "*"
+types-requests = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"

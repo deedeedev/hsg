@@ -2,7 +2,8 @@
 
 import sys
 import csv
-import click
+
+from utils.constants import RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV
 
 # TODO implementare cli
 
@@ -59,8 +60,8 @@ class Frequency:
 
 if __name__ == '__main__':
     fq = Frequency(
-        'assets/renminwang/RENMINWANG-CHR',
-        'assets/renminwang/RENMINWANG-WF',
+        RMW_FREQUENCIES_CHARS_CSV,
+        RMW_FREQUENCIES_WORDS_CSV,
     )
 
     print(fq.find_char('引'))

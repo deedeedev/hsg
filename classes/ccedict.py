@@ -1,3 +1,4 @@
+from classes.subtlexch import SubtlexCh
 import sys
 import csv
 import json
@@ -7,7 +8,7 @@ from classes.renminwang import RenMinWang
 from classes.hsk import HSK
 from rich import print
 from tabulate import tabulate
-from utils.constants import HSK_OLD_CSV, HSK_NEW_CSV, RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV, ADDITIONAL_CHARACTERS
+from utils.constants import ADDITIONAL_CHARACTERS
 
 from enum import Enum
 from typing import List, Union
@@ -22,11 +23,11 @@ class QueryType(Enum):
 
 class Ccedict:
 
-    def __init__(self, cedictfile: str) -> None:
+    def __init__(self, cedictfile: str, frequencies_corpus: str) -> None:
         self.cedictfile: str = cedictfile
         self.dictionary: List[dict] = []
-        self.fq: RenMinWang = RenMinWang(RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV)
-        self.hsk: HSK = HSK(HSK_OLD_CSV, HSK_NEW_CSV)
+        self.fq = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
+        self.hsk: HSK = HSK()
         self.load_dict()
 
     def load_dict(self) -> None:

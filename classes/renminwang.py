@@ -9,9 +9,9 @@ from utils.constants import RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV
 
 class RenMinWang(Frequency):
 
-    def __init__(self, char_freq_csv, word_freq_csv):
-        self.char_freq: list[Any] = self.load_csv(char_freq_csv)
-        self.word_freq: list[Any] = self.load_csv(word_freq_csv)
+    def __init__(self):
+        self.char_freq: list[Any] = self.load_csv(RMW_FREQUENCIES_CHARS_CSV)
+        self.word_freq: list[Any] = self.load_csv(RMW_FREQUENCIES_WORDS_CSV)
         self.chars: dict[str, Any] = self.create_dict(self.char_freq)
         self.words: dict[str, Any] = self.create_dict(self.word_freq)
 
@@ -58,7 +58,7 @@ class RenMinWang(Frequency):
 
 
 if __name__ == '__main__':
-    fq = RenMinWang(RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV)
+    fq = RenMinWang()
 
     # print(fq.find_char('引'))
     # print(fq.find_word('中国'))

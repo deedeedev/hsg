@@ -1,5 +1,3 @@
-# character frequencies: https://lingua.mtsu.edu/chinese-computing/statistics/char/list.php?Which=MO
-
 import sys
 
 # import codecs
@@ -7,10 +5,10 @@ import click
 import clipboard
 import PySimpleGUI as sg
 from rich import print
+from pypinyin import pinyin, lazy_pinyin, Style
 
 from classes.heisig import Heisig
 from classes.hsk import HSK
-from utils.constants import HEISIG_CSV, HSK_NEW_CSV, HSK_OLD_CSV
 from utils.writers import WRITERS, validate_fields
 
 
@@ -38,8 +36,8 @@ def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort,
 
     If no text is passed as argument fallbacks to stdin then clipboard
     """
-    hsg = Heisig(HEISIG_CSV, frequencies_corpus, max_frame)
-    hsk = HSK(HSK_OLD_CSV, HSK_NEW_CSV)
+    hsg = Heisig(frequencies_corpus, max_frame)
+    hsk = HSK()
     input = get_input(text, file)
     chars = [c for c in input.replace('\r', '').replace('\n', '').strip() if not hsg.is_additional_character(c)]
     statistics = hsg.get_statistics(chars)
@@ -81,7 +79,7 @@ def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort,
                 'frame': '',
                 'frequency': '',
                 'hsk': hsk_level,
-                'pinyin': '',
+                'pinyin': ' '.join(pinyin(char, style=Style.TONE3, heteronym=True)[0]),
                 'keyword': '',
                 'occurrencies': occurrencies,
             }
@@ -111,8 +109,8 @@ def enrich(text, file, max_frame, verbose):
 
     If no text is passed as argument fallbacks to stdin then clipboard
     """
-    hsg = Heisig(HEISIG_CSV, 'subtlexch', max_frame)
-    hsk = HSK(HSK_OLD_CSV, HSK_NEW_CSV)
+    hsg = Heisig('subtlexch', max_frame)
+    hsk = HSK()
     input = get_input(text, file)
     chars = [c for c in input.strip()]
     statistics = hsg.get_statistics(chars)
@@ -129,7 +127,7 @@ def enrich(text, file, max_frame, verbose):
 
     # output stats
     if verbose:
-        print(f"\r\nKnown characters: {statistics['known']}/{statistics['chars']} ({statistics['known_percent']}%)")
+        print(f"\r\n\r\nKnown characters: {statistics['known']}/{statistics['chars']} ({statistics['known_percent']}%)")
         print(f"Unknown characters: {statistics['unknown']}/{statistics['chars']} ({statistics['unknown_percent']}%)")
         print(f"Known unique characters: {statistics['known_unique']}/{statistics['chars_unique']} ({statistics['known_unique_percent']}%)")
         print(f"Unknown unique characters: {statistics['unknown_unique']}/{statistics['chars_unique']} ({statistics['unknown_unique_percent']}%)\r\n")
@@ -147,7 +145,7 @@ def list(min, max, sort, frequencies_corpus, reverse, format, max_results):
     """
     Prints Heisig frames data.
     """
-    hsg = Heisig(HEISIG_CSV, frequencies_corpus)
+    hsg = Heisig(frequencies_corpus)
     frames = [frame for idx, frame in enumerate(hsg.heisig.values()) if idx+1 >= min and idx+1 <= max]
     if sort == 'frame' and reverse:
         frames.reverse()

@@ -11,9 +11,9 @@ from utils.constants import SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV, SUBTLEX_
 
 class SubtlexCh(Frequency):
 
-    def __init__(self, char_freq_csv, word_freq_csv):
-        self.char_freq: list[Any] = self.load_csv(char_freq_csv)
-        self.word_freq: list[Any] = self.load_csv(word_freq_csv)
+    def __init__(self):
+        self.char_freq: list[Any] = self.load_csv(SUBTLEX_CH_CHARS_CSV)
+        self.word_freq: list[Any] = self.load_csv(SUBTLEX_CH_WORDS_CSV)
         self.chars = self.create_dict(self.char_freq)
         self.words = self.create_dict(self.word_freq)
 
@@ -49,7 +49,7 @@ class SubtlexCh(Frequency):
 
 
 if __name__ == '__main__':
-    fq = SubtlexCh(SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV)
+    fq = SubtlexCh()
 
     # print(fq.find_char('引'))
     # print(fq.find_word('中国'))

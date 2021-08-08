@@ -7,18 +7,14 @@ from typing import Union
 
 from classes.renminwang import RenMinWang
 from classes.subtlexch import SubtlexCh
-from utils.constants import ADDITIONAL_CHARACTERS, SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV, RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV
+from utils.constants import HEISIG_CSV, ADDITIONAL_CHARACTERS
 
 
 class Heisig:
 
-    def __init__(self, heisigcsv: str, frequenciescorpus: str, maxframe: int=-1):
-        self.heisigcsv = heisigcsv
+    def __init__(self, frequencies_corpus: str, maxframe: int=-1):
         self.maxframe = maxframe
-        if frequenciescorpus == 'renminwang':
-            self.frequencies = RenMinWang(RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV)
-        else:
-            self.frequencies = SubtlexCh(SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV)
+        self.frequencies = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
         self.heisig: dict[str, Union[str, int]] = {}
         self.load_heisig()
         self.known_characters = self.get_known_characters()
@@ -27,7 +23,7 @@ class Heisig:
         self.maxframe = maxframe
 
     def load_heisig(self):
-        with open(self.heisigcsv) as f:
+        with open(HEISIG_CSV) as f:
             reader = csv.reader(f, delimiter="\t")
             for row in reader:
                 frame = row[2]

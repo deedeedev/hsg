@@ -10,13 +10,13 @@ from utils.constants import HSK_OLD_CSV, HSK_NEW_CSV, ADDITIONAL_CHARACTERS
 
 class HSK:
 
-    def __init__(self, oldhskcsv: str, newhskcsv: str) -> None:
+    def __init__(self) -> None:
         self.hsk_old: OrderedDict = OrderedDict()
         self.hsk_new: OrderedDict = OrderedDict()
         self.hsk_old_chars: OrderedDict = OrderedDict()
         self.hsk_new_chars: OrderedDict = OrderedDict()
-        self.load_old_hsk(oldhskcsv)
-        self.load_new_hsk(newhskcsv)
+        self.load_old_hsk(HSK_OLD_CSV)
+        self.load_new_hsk(HSK_NEW_CSV)
 
     def load_old_hsk(self, oldhskcsv: str) -> None:
         with open(oldhskcsv, 'r') as f:
@@ -100,7 +100,7 @@ class HSK:
 
 
 if __name__ == '__main__':
-    hsk = HSK(HSK_OLD_CSV, HSK_NEW_CSV)
+    hsk = HSK()
 
     # print(hsk.get_hsk_old_char_level('爱'))
     # print(hsk.get_hsk_old_chars(2))

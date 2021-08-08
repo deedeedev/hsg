@@ -1,15 +1,16 @@
 # character frequencies: https://lingua.mtsu.edu/chinese-computing/statistics/char/list.php?Which=MO
 
 import sys
+
 # import codecs
 import click
 import clipboard
 import PySimpleGUI as sg
-
 from rich import print
+
 from classes.heisig import Heisig
 from classes.hsk import HSK
-from utils.constants import HEISIG_CSV, FREQUENCIES_CSV, HSK_OLD_CSV, HSK_NEW_CSV
+from utils.constants import HEISIG_CSV, HSK_NEW_CSV, HSK_OLD_CSV
 from utils.writers import WRITERS, validate_fields
 
 
@@ -27,16 +28,17 @@ def cli():
 @click.option('-q', '--unique', required=False, is_flag=True, help='Print every character only once.')
 @click.option('-t', '--format', type=click.Choice(['csv', 'json', 'tabulate']), default='csv', help='Output format (default csv).')
 @click.option('-s', '--sort', type=click.Choice(['text', 'frame', 'frequency', 'occurrencies']), default='text', help='Sort characters by original order, heisig frame number or frequency number.')
+@click.option('-c', '--frequencies-corpus', type=click.Choice(['renminwang', 'subtlexch']), default='subtlexch', help='Frequencies data corpus.')
 @click.option('-r', '--reverse', required=False, is_flag=True, default=False, help='Reverse order if sorting by frame or frequency.')
 @click.option('-h', '--fields', required=False, type=click.UNPROCESSED, default=['known', 'hanzi', 'frame', 'frequency', 'hsk', 'pinyin', 'keyword', 'occurrencies'], callback=validate_fields, help='Fields to show.')
 @click.option('-v', '--verbose', required=False, is_flag=True)
-def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort, reverse, fields, verbose):
+def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort, frequencies_corpus, reverse, fields, verbose):
     """
     Parses a text and returns a list of Heisig frames.
 
     If no text is passed as argument fallbacks to stdin then clipboard
     """
-    hsg = Heisig(HEISIG_CSV, FREQUENCIES_CSV, max_frame)
+    hsg = Heisig(HEISIG_CSV, frequencies_corpus, max_frame)
     hsk = HSK(HSK_OLD_CSV, HSK_NEW_CSV)
     input = get_input(text, file)
     chars = [c for c in input.replace('\r', '').replace('\n', '').strip() if not hsg.is_additional_character(c)]
@@ -109,7 +111,7 @@ def enrich(text, file, max_frame, verbose):
 
     If no text is passed as argument fallbacks to stdin then clipboard
     """
-    hsg = Heisig(HEISIG_CSV, FREQUENCIES_CSV, max_frame)
+    hsg = Heisig(HEISIG_CSV, 'subtlexch', max_frame)
     hsk = HSK(HSK_OLD_CSV, HSK_NEW_CSV)
     input = get_input(text, file)
     chars = [c for c in input.strip()]
@@ -137,14 +139,15 @@ def enrich(text, file, max_frame, verbose):
 @click.option('--min', type=click.INT, default=0)
 @click.option('--max', type=click.INT, default=9999)
 @click.option('-s', '--sort', type=click.Choice(['frame', 'frequency']), default='frame')
+@click.option('-c', '--frequencies-corpus', type=click.Choice(['renminwang', 'subtlexch']), default='subtlexch', help='Frequencies data corpus.')
 @click.option('-r', '--reverse', required=False, is_flag=True, default=False, help='Reverse sorting order.')
 @click.option('-f', '--format', required=False, type=click.Choice(['csv', 'json', 'tabulate']), default='tabulate', help='Output format (default csv).')
 @click.option('-m', '--max-results', required=False, type=click.INT, default=-1, help='Show max n results.')
-def list(min, max, sort, reverse, format, max_results):
+def list(min, max, sort, frequencies_corpus, reverse, format, max_results):
     """
     Prints Heisig frames data.
     """
-    hsg = Heisig(HEISIG_CSV, FREQUENCIES_CSV)
+    hsg = Heisig(HEISIG_CSV, frequencies_corpus)
     frames = [frame for idx, frame in enumerate(hsg.heisig.values()) if idx+1 >= min and idx+1 <= max]
     if sort == 'frame' and reverse:
         frames.reverse()

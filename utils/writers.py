@@ -3,11 +3,11 @@ import csv
 import json
 import click
 
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from tabulate import tabulate
 
 
-class Writer(ABC):
+class Writer(metaclass=ABCMeta):
 
     @abstractmethod
     def writerow(self, rowdata: list) -> None:

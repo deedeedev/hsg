@@ -3,18 +3,23 @@ import csv
 import json
 
 from tabulate import tabulate
-from utils.constants import ADDITIONAL_CHARACTERS
+from typing import Union
+
+from classes.renminwang import RenMinWang
+from classes.subtlexch import SubtlexCh
+from utils.constants import ADDITIONAL_CHARACTERS, SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV, RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV
 
 
 class Heisig:
 
-    def __init__(self, heisigcsv, frequenciescsv, maxframe=-1):
+    def __init__(self, heisigcsv: str, frequenciescorpus: str, maxframe: int=-1):
         self.heisigcsv = heisigcsv
-        self.frequenciescsv = frequenciescsv
         self.maxframe = maxframe
-        self.frequencies = {}
-        self.heisig = {}
-        self.load_frequencies()
+        if frequenciescorpus == 'renminwang':
+            self.frequencies = RenMinWang(RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV)
+        else:
+            self.frequencies = SubtlexCh(SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV)
+        self.heisig: dict[str, Union[str, int]] = {}
         self.load_heisig()
         self.known_characters = self.get_known_characters()
 
@@ -32,23 +37,16 @@ class Heisig:
                 hanzi = row[0]
                 keyword = row[4]
                 pinyin = row[5]
-                frequency = self.frequencies[hanzi] if hanzi in self.frequencies else 9999
+                frequency_data = self.frequencies.find_char(hanzi)
                 self.heisig[hanzi] = {
                     'hanzi': hanzi,
                     'frame': frame,
                     'keyword': keyword,
                     'pinyin': pinyin,
-                    'frequency': frequency,
+                    'frequency': frequency_data['rank'] if frequency_data else 9999,
                 }
         if self.maxframe == -1:
             self.maxframe = max([f['frame'] for f in self.heisig.values()])
-
-    def load_frequencies(self):
-        with open(self.frequenciescsv, 'r', encoding='utf-8') as f:
-            # text = codecs.decode(f.read().encode(), 'utf-8-sig')
-            reader = csv.reader(f, delimiter='\t')
-            for row in reader:
-                self.frequencies[row[1]] = int(row[0])
 
     def get_known_frames(self):
         return [hanzi for hanzi in self.heisig if self.heisig[hanzi]['frame'] <= self.maxframe]

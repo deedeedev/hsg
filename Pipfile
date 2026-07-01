@@ -18,6 +18,7 @@ mypy = "*"
 types-tabulate = "*"
 pysimplegui = "*"
 types-requests = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 

@@ -1,4 +1,10 @@
+from ast import Try
 import sys
+import json
+import requests
+from PySimpleGUI.PySimpleGUI import theme_previewer
+from io import StringIO
+from html.parser import HTMLParser
 
 # import codecs
 import click
@@ -11,10 +17,107 @@ from classes.heisig import Heisig
 from classes.hsk import HSK
 from utils.writers import WRITERS, validate_fields
 
+# TODO gestire i file csv con database SQLite e sqlalchemy
+# TODO consolidare le interfacce cli in un unico comando, es: hsg cc, hsg freq, hsg tatoeba, hsg parse ecc.
+
 
 @click.group()
 def cli():
     pass
+
+
+@cli.command()
+@click.argument('text', required=False)
+@click.option('-f', '--file', type=click.File('r'), default=sys.stdin)
+def stories(text, file):
+    """
+    Parses a text and returns a list of Heisig stories.
+    If no text is passed as argument fallbacks to stdin then clipboard
+    """
+
+    def find_notes(hanzi):
+        url = "http://localhost:8765"
+        payload = {
+            "action": "findNotes",
+            "version": 6,
+            "params": {
+                "query": f"deck:Cinese::Heisig Hanzi:{hanzi}",
+            }
+        }
+        response = requests.request("POST", url, json=payload)
+        ids = json.loads(response.text)["result"]
+        return ids
+
+    def get_note(id):
+        url = "http://localhost:8765"
+        payload = {
+            "action": "notesInfo",
+            "version": 6,
+            "params": {
+                "notes": [id],
+            }
+        }
+        response = requests.request("POST", url, json=payload)
+        notes = json.loads(response.text)["result"]
+        if len(notes) > 0:
+            return notes[0]
+        return None
+
+    def get_data(hanzi):
+        ids = find_notes(hanzi)
+        if ids:
+            note = get_note(ids[0])
+            if note:
+                return {
+                    "keyword": note['fields']['Keyword']['value'],
+                    "keyword_ita": note['fields']['KeywordIta']['value'],
+                    "primitive": note['fields']['PrimitiveMeaning']['value'],
+                    "primitive_ita": note['fields']['PrimitiveMeaningIta']['value'],
+                    "story": note['fields']['Story']['value'],
+                }
+        return None
+
+    def get_input(text, file):
+        if text:
+            # text argument
+            return text
+        elif file and not sys.stdin.isatty():
+            with file:
+                # 1st fallback: stdin
+                return file.read()
+        else:
+            # 2nd fallback: clipboard
+            return clipboard.paste()
+
+    class MLStripper(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.reset()
+            self.strict = False
+            self.convert_charrefs = True
+            self.text = StringIO()
+
+        def handle_data(self, d):
+            self.text.write(d)
+
+        def get_data(self):
+            return self.text.getvalue()
+
+    def strip_tags(html):
+        s = MLStripper()
+        s.feed(html)
+        return s.get_data()
+
+    input = get_input(text, file)
+    chars = [c for c in input.replace('\r', '').replace('\n', '').strip()]
+    for idx, char in enumerate(chars):
+        data = get_data(char)
+        if not data:
+            print(f"{char}: NO HEISIG")
+        else:
+            print(f"{char} ({data['keyword']} | {data['keyword_ita']}): {strip_tags(data['story'])}")
+        if (idx < len(chars) - 1):
+            print()
 
 
 @cli.command()
@@ -25,10 +128,13 @@ def cli():
 @click.option('-u', '--only-unknown', required=False, is_flag=True, help='Print only unknown frames.')
 @click.option('-q', '--unique', required=False, is_flag=True, help='Print every character only once.')
 @click.option('-t', '--format', type=click.Choice(['csv', 'json', 'tabulate']), default='csv', help='Output format (default csv).')
-@click.option('-s', '--sort', type=click.Choice(['text', 'frame', 'frequency', 'occurrencies']), default='text', help='Sort characters by original order, heisig frame number or frequency number.')
+@click.option('-s', '--sort', type=click.Choice(['text', 'frame', 'frequency', 'occurrencies']),
+              default='text', help='Sort characters by original order, heisig frame number or frequency number.')
 @click.option('-c', '--frequencies-corpus', type=click.Choice(['renminwang', 'subtlexch']), default='subtlexch', help='Frequencies data corpus.')
 @click.option('-r', '--reverse', required=False, is_flag=True, default=False, help='Reverse order if sorting by frame or frequency.')
-@click.option('-h', '--fields', required=False, type=click.UNPROCESSED, default=['known', 'hanzi', 'frame', 'frequency', 'hsk', 'pinyin', 'keyword', 'occurrencies'], callback=validate_fields, help='Fields to show.')
+@click.option('-h', '--fields', required=False, type=click.UNPROCESSED,
+              default=['known', 'hanzi', 'frame', 'frequency', 'hsk', 'pinyin', 'keyword', 'occurrencies'],
+              callback=validate_fields, help='Fields to show.')
 @click.option('-v', '--verbose', required=False, is_flag=True)
 def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort, frequencies_corpus, reverse, fields, verbose):
     """
@@ -174,6 +280,8 @@ def get_input(text, file):
 
 @cli.command()
 def gui():
+
+    sg.theme('Default1')
 
     layout = [
         [sg.Text('aaa')],

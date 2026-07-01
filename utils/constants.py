@@ -9,6 +9,7 @@ ASSETS_DIR_PATH = os.path.join(os.path.dirname(UTILS_DIR_PATH), 'assets')
 HEISIG_CSV = os.path.join(ASSETS_DIR_PATH, 'heisig.tsv')
 CCEDICT_CSV = os.path.join(ASSETS_DIR_PATH, 'cedict_ts.u8')
 TATOEBA_CSV = os.path.join(ASSETS_DIR_PATH, 'tatoeba.tsv')
+TATOEBA_DB = os.path.join(ASSETS_DIR_PATH, 'tatoeba.sqlite')
 HSK_NEW_CSV = os.path.join(ASSETS_DIR_PATH, 'hsk_new.csv')
 HSK_OLD_CSV = os.path.join(ASSETS_DIR_PATH, 'hsk_old.csv')
 

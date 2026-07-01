@@ -1,10 +1,10 @@
-import sys
 import csv
 
+from operator import xor
 from typing import Any, Optional
 
 from classes.frequency import Frequency
-from utils.constants import RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV
+from utils.constants import RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV, HEISIG_CSV
 
 
 class RenMinWang(Frequency):
@@ -32,8 +32,8 @@ class RenMinWang(Frequency):
             reader = csv.DictReader(f, fieldnames=fields, delimiter='\t')
             reader_no_headers = list(reader)[3:]  # skip first 3 lines
             for idx, lemma in enumerate(reader_no_headers):
-                lemma['rank'] = idx + 1 # type: ignore
-                lemma['count_x_cd'] = int(lemma['count']) * int(lemma['cd']) # type: ignore
+                lemma['rank'] = idx + 1  # type: ignore
+                lemma['count_x_cd'] = int(lemma['count']) * int(lemma['cd'])  # type: ignore
             return reader_no_headers
 
     def create_dict(self, list) -> dict[str, Any]:
@@ -48,13 +48,23 @@ class RenMinWang(Frequency):
     def find_word(self, word: str) -> Optional[list[Any]]:
         return self.words.get(word)
 
-    def print_most_frequent_words(self, num: int) -> None:
-        fields = ('rank', 'lemma', 'count', 'count_million', 'count_log', 'cd', 'cd_percent', 'cd_log', 'rank', 'count_x_cd')
-        writer = csv.DictWriter(sys.stdout, fieldnames=fields, delimiter='\t')
-        # sort by count*cd desc
-        data = sorted(self.word_freq, key=lambda x: int(x['count']) * int(x['cd']), reverse=True)
-        writer.writeheader()
-        writer.writerows(data[:num])
+    def get_most_frequent_lemmas(self, type: str='chars', num: int=-1, skip_heisig: bool=False, only_heisig: bool=False, sort: str='rank', reverse: bool=False) -> list[Any]:
+        if type == 'chars':
+            lemmas = self.char_freq
+        else:
+            lemmas = self.word_freq
+        if num == -1:
+            num = len(lemmas)
+        if xor(skip_heisig, only_heisig):
+            with open(HEISIG_CSV, 'r') as f:
+                reader = csv.reader(f, delimiter='\t')
+                heisig_characters = [r[0] for r in reader]
+            if skip_heisig:
+                lemmas = [l for l in lemmas if not l['lemma'] in heisig_characters]
+            if only_heisig:
+                lemmas = [l for l in lemmas if l['lemma'] in heisig_characters]
+        data = sorted(lemmas, key=lambda x: x[sort], reverse=reverse)
+        return data[:num]
 
 
 if __name__ == '__main__':
@@ -62,4 +72,3 @@ if __name__ == '__main__':
 
     # print(fq.find_char('引'))
     # print(fq.find_word('中国'))
-    fq.print_most_frequent_words(10)

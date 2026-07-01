@@ -6,7 +6,8 @@ setup(
     py_modules=[
             'heisigtools',
             'heisigtatoeba',
-            'ccedict',
+            'ccedictsearch',
+            'frequencytools',
         ],
     install_requires=[
         'Click',
@@ -16,6 +17,7 @@ setup(
             'hsg = heisigtools:cli',
             'hsg-tatoeba = heisigtatoeba:cli',
             'hsg-cc = ccedictsearch:search',
+            'hsg-freq = frequencytools:search',
         ],
     },
 )

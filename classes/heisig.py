@@ -94,7 +94,7 @@ class Heisig:
             fields = ('hanzi', 'frame', 'keyword', 'pinyin', 'frequency')
             writer = csv.DictWriter(sys.stdout, fieldnames=fields, delimiter='\t', extrasaction='ignore')
             writer.writeheader()
-            writer.writerows(words[:10])
+            writer.writerows(words)
         elif format == 'json':
             print(json.dumps(words))
         elif format == 'tabulate':

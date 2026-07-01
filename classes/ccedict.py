@@ -3,12 +3,14 @@ import sys
 import csv
 import json
 import re
+import pickle
+import os
 
 from classes.renminwang import RenMinWang
 from classes.hsk import HSK
 from rich import print
 from tabulate import tabulate
-from utils.constants import ADDITIONAL_CHARACTERS
+from utils.constants import ADDITIONAL_CHARACTERS, ASSETS_DIR_PATH
 
 from enum import Enum
 from typing import List, Union
@@ -31,6 +33,11 @@ class Ccedict:
         self.load_dict()
 
     def load_dict(self) -> None:
+        pickle_dict = os.path.join(ASSETS_DIR_PATH, 'ccedict.pickle')
+        if os.path.isfile(pickle_dict):
+            with open(pickle_dict, 'rb') as d:
+                self.dictionary = pickle.load(d)
+                return
         with open(self.cedictfile) as f:
             text: str = f.read()
             lines: List[str] = text.split('\n')
@@ -38,6 +45,8 @@ class Ccedict:
             for line in self.dict_lines:
                 self.parse_line(line)
             self.remove_surnames()
+            with open(pickle_dict, 'wb') as d:
+                pickle.dump(self.dictionary, d)
 
     def parse_line(self, line: str) -> None:
         if line == '':
@@ -113,8 +122,7 @@ class Ccedict:
 
     def output(self, words: List[dict], format: str) -> None:
         if format == 'csv':
-            writer: csv.DictWriter = csv.DictWriter(
-                sys.stdout, fieldnames=list(words[0].keys()), delimiter='\t', extrasaction='ignore')
+            writer: csv.DictWriter = csv.DictWriter(sys.stdout, fieldnames=list(words[0].keys()), delimiter='\t', extrasaction='ignore')
             writer.writeheader()
             writer.writerows(words[:10])
         elif format == 'json':

@@ -4,7 +4,7 @@ import json
 import random
 import click
 
-from typing import List, Dict, Union
+from typing import Union
 from rich import print
 from tabulate import tabulate
 from pypinyin import pinyin, lazy_pinyin, Style
@@ -13,8 +13,8 @@ from utils.constants import ADDITIONAL_CHARACTERS, HEISIG_CSV, TATOEBA_CSV
 # TODO utilizzare click per l'output colorato al posto di rich (https://click.palletsprojects.com/en/8.0.x/utils/#ansi-colors)
 
 
-Frame = Dict[str, str]
-Sentence = Dict[str, Union[str, List[str]]]
+Frame = dict[str, str]
+Sentence = dict[str, Union[str, list[str]]]
 
 
 class TatoebaHeisig:
@@ -23,9 +23,9 @@ class TatoebaHeisig:
         self.tatoebacsv: str = tatoebacsv
         self.heisigcsv: str = heisigcsv
         self.maxframe: int = maxframe
-        self.tatoeba: Dict[str, List[str]] = {}
-        self.heisig: Dict[str, Frame] = {}
-        self.allowed_sentences: List[Sentence] = []
+        self.tatoeba: dict[str, list[str]] = {}
+        self.heisig: dict[str, Frame] = {}
+        self.allowed_sentences: list[Sentence] = []
 
     def load_tatoeba(self) -> None:
         with open(self.tatoebacsv) as f:
@@ -54,19 +54,19 @@ class TatoebaHeisig:
                     "pinyin": pinyin,
                 }
 
-    def get_allowed_frames(self) -> List[str]:
+    def get_allowed_frames(self) -> list[str]:
         if self.maxframe == -1:
             return list(self.heisig.keys())
         return [hanzi for hanzi in self.heisig if int(self.heisig[hanzi]["frame"]) <= self.maxframe]
 
-    def get_allowed_characters(self) -> List[str]:
+    def get_allowed_characters(self) -> list[str]:
         return self.get_allowed_frames() + [char for char in ADDITIONAL_CHARACTERS]
 
     def get_all_allowed_sentences(self) -> None:
         self.load_tatoeba()
         self.load_heisig()
         count = 0
-        allowed: List[str] = self.get_allowed_characters()
+        allowed: list[str] = self.get_allowed_characters()
         for sentence in self.tatoeba:
             if self.maxframe == -1 or all([True if char in allowed else False for char in sentence]):
                 self.allowed_sentences.append({"hanzi": sentence, "translations": self.tatoeba[sentence]})
@@ -113,7 +113,7 @@ def cli():
 
 @cli.command()
 @click.argument('keyword')
-@click.option('-m', '--max-frame', type=click.INT, default=-1, help='Max Heisig frame known. (default 1500)')
+@click.option('-m', '--max-frame', type=click.INT, default=-1, help='Max Heisig frame known. (default MAX)')
 @click.option('-a', '--all-characters', required=False, is_flag=True, default=False, help='Allow all non-Heisig characters.')
 @click.option('-n', '--max-sentences', type=click.INT, default=10000, help='Max sentences to return (default ALL)')
 @click.option('-r', '--reverse', required=False, is_flag=True, default=False, help='Return longer sentences first (default FALSE)')

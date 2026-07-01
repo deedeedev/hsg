@@ -26,10 +26,7 @@ dev = [
 ]
 
 [project.scripts]
-hsg = "hsg.commands.heisigtools:cli"
-hsg-tatoeba = "hsg.commands.heisigtatoeba:cli"
-hsg-cc = "hsg.commands.ccedictsearch:search"
-hsg-freq = "hsg.commands.frequencytools:search"
+hsg = "hsg.cli:cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["hsg"]

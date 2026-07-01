@@ -106,12 +106,7 @@ class TatoebaHeisig:
             print(tabulate(sentences, headers='keys', tablefmt='github'))
 
 
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
+@click.command()
 @click.argument('keyword')
 @click.option('-m', '--max-frame', type=click.INT, default=-1, help='Max Heisig frame known. (default MAX)')
 @click.option('-a', '--all-characters', required=False, is_flag=True, default=False, help='Allow all non-Heisig characters.')
@@ -131,7 +126,7 @@ def sentences(keyword: str, max_frame: int, all_characters: bool, max_sentences:
     ht.print_sentences(sentences, format)
 
 
-@cli.command(name='random')
+@click.command(name='random')
 @click.option('-m', '--max-frame', type=click.INT, default=-1, help='Max Heisig frame known.')
 @click.option('-a', '--all-characters', required=False, is_flag=True, default=False, help='Allow all non-Heisig characters.')
 @click.option('-n', '--sentences-number', type=click.INT, default=10, help='Return n sentences (default 10).')
@@ -149,7 +144,3 @@ def random_sentences(max_frame: int, all_characters: bool, sentences_number: int
     ht = TatoebaHeisig(TATOEBA_CSV, HEISIG_CSV, max_frame)
     sentences = ht.find_random_sentences(sentences_number, min_length, reverse)
     ht.print_sentences(sentences, format)
-
-
-if __name__ == "__main__":
-    cli()

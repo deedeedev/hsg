@@ -2,18 +2,15 @@ import sys
 import csv
 import json
 import click
-try:
-    import clipboard
-except ImportError:
-    clipboard = None
 
 from tabulate import tabulate
 from hsg.classes.heisig import Heisig
 from hsg.classes.renminwang import RenMinWang
 from hsg.classes.subtlexch import SubtlexCh
+from hsg.utils.io import get_input
 
 
-@click.command()
+@click.command(name='freq')
 @click.argument('text', required=False)
 @click.option('-f', '--file', type=click.File('r'), default=sys.stdin)
 @click.option('-k', '--skip-clipboard', required=False, is_flag=True, help='Skip clipboard content.')
@@ -45,28 +42,3 @@ def search(text, file, skip_clipboard, max_results, skip_heisig, only_heisig, ty
             print(json.dumps(lemmas))
         elif format == 'tabulate':
             print(tabulate(lemmas, headers='keys', tablefmt='github'))
-
-
-def get_input(text, file):
-    """
-    Gets input from argument, then stdin, then clipboard
-    """
-    if text:
-        # text argument
-        return text
-    elif file and not sys.stdin.isatty():
-        with file:
-            # 1st fallback: stdin
-            return file.read()
-    else:
-        # 2nd fallback: clipboard
-        if clipboard is None:
-            raise click.UsageError(
-                "no text argument or stdin provided and the 'clipboard' "
-                "extra is not installed; install with `pip install hsg[clipboard]`"
-            )
-        return clipboard.paste()
-
-
-if __name__ == '__main__':
-    search()

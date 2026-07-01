@@ -4,7 +4,7 @@ from hsg.classes.ccedict import Ccedict
 from hsg.utils.constants import CCEDICT_CSV
 
 
-@click.command()
+@click.command(name='lookup')
 @click.argument('query')
 @click.option('-e', '--exact', required=False, is_flag=True, default=False, help='Search exact expression.')
 @click.option('-t', '--show-traditional', required=False, is_flag=True, default=False, help='Show traditional characters.')
@@ -18,7 +18,3 @@ from hsg.utils.constants import CCEDICT_CSV
 def search(query: str, exact: bool, show_traditional: bool, format: str, sort: str, frequencies_corpus: str, reverse: bool, max_hsk: str, max_results: int, all_results: bool):
     ce: Ccedict = Ccedict(CCEDICT_CSV, frequencies_corpus)
     ce.search(query, exact, show_traditional, format, sort, reverse, max_hsk, max_results, all_results)
-
-
-if __name__ == '__main__':
-    search()

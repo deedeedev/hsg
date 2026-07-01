@@ -5,27 +5,16 @@ from io import StringIO
 from html.parser import HTMLParser
 
 import click
-try:
-    import clipboard
-except ImportError:
-    clipboard = None
 from rich import print
 from pypinyin import pinyin, lazy_pinyin, Style
 
 from hsg.classes.heisig import Heisig
 from hsg.classes.hsk import HSK
+from hsg.utils.io import get_input
 from hsg.utils.writers import WRITERS, validate_fields
 
-# TODO gestire i file csv con database SQLite e sqlalchemy
-# TODO consolidare le interfacce cli in un unico comando, es: hsg cc, hsg freq, hsg tatoeba, hsg parse ecc.
 
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
+@click.command()
 @click.argument('text', required=False)
 @click.option('-f', '--file', type=click.File('r'), default=sys.stdin)
 def stories(text, file):
@@ -76,18 +65,6 @@ def stories(text, file):
                 }
         return None
 
-    def get_input(text, file):
-        if text:
-            # text argument
-            return text
-        elif file and not sys.stdin.isatty():
-            with file:
-                # 1st fallback: stdin
-                return file.read()
-        else:
-            # 2nd fallback: clipboard
-            return clipboard.paste()
-
     class MLStripper(HTMLParser):
         def __init__(self):
             super().__init__()
@@ -119,7 +96,7 @@ def stories(text, file):
             print()
 
 
-@cli.command()
+@click.command()
 @click.argument('text', required=False)
 @click.option('-f', '--file', type=click.File('r'), default=sys.stdin)
 @click.option('-m', '--max-frame', type=click.INT, default=-1, help='Max Heisig frame known.')
@@ -203,7 +180,7 @@ def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort,
         print(f"Unknown unique characters: {statistics['unknown_unique']}/{statistics['chars_unique']} ({statistics['unknown_unique_percent']}%)\r\n")
 
 
-@cli.command()
+@click.command()
 @click.argument('text', required=False)
 @click.option('-f', '--file', required=False, type=click.File('r'), default=sys.stdin)
 @click.option('-m', '--max-frame', type=click.INT, default=-1)
@@ -238,7 +215,7 @@ def enrich(text, file, max_frame, verbose):
         print(f"Unknown unique characters: {statistics['unknown_unique']}/{statistics['chars_unique']} ({statistics['unknown_unique_percent']}%)\r\n")
 
 
-@cli.command()
+@click.command()
 @click.option('--min', type=click.INT, default=0)
 @click.option('--max', type=click.INT, default=9999)
 @click.option('-s', '--sort', type=click.Choice(['frame', 'frequency']), default='frame')
@@ -259,28 +236,3 @@ def list(min, max, sort, frequencies_corpus, reverse, format, max_results):
     if max_results > -1:
         frames = frames[:max_results]
     hsg.output(frames, format)
-
-
-def get_input(text, file):
-    """
-    Gets input from argument, then stdin, then clipboard
-    """
-    if text:
-        # text argument
-        return text
-    elif file and not sys.stdin.isatty():
-        with file:
-            # 1st fallback: stdin
-            return file.read()
-    else:
-        # 2nd fallback: clipboard
-        if clipboard is None:
-            raise click.UsageError(
-                "no text argument or stdin provided and the 'clipboard' "
-                "extra is not installed; install with `pip install hsg[clipboard]`"
-            )
-        return clipboard.paste()
-
-
-if __name__ == '__main__':
-    cli()

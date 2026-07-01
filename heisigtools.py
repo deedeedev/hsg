@@ -1,15 +1,11 @@
-from ast import Try
 import sys
 import json
 import requests
-from PySimpleGUI.PySimpleGUI import theme_previewer
 from io import StringIO
 from html.parser import HTMLParser
 
-# import codecs
 import click
 import clipboard
-import PySimpleGUI as sg
 from rich import print
 from pypinyin import pinyin, lazy_pinyin, Style
 
@@ -276,27 +272,6 @@ def get_input(text, file):
     else:
         # 2nd fallback: clipboard
         return clipboard.paste()
-
-
-@cli.command()
-def gui():
-
-    sg.theme('Default1')
-
-    layout = [
-        [sg.Text('aaa')],
-        [sg.Input()],
-        [sg.Button('Ok'), sg.Button('Quit')],
-    ]
-
-    window = sg.Window('Heisig Tools', layout)
-
-    while True:
-        event, values = window.read()
-        if event == sg.WINDOW_CLOSED or event == 'Quit':
-            break
-
-    window.close()
 
 
 if __name__ == '__main__':

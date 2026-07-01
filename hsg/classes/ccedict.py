@@ -41,7 +41,9 @@ class Ccedict:
             with open(pickle_dict, 'rb') as d:
                 loaded: list[dict[str, Any]] = pickle.load(d)
                 self.dictionary = loaded
+                logger.info('Loaded ccedict from pickle (%d entries)', len(self.dictionary))
                 return
+        logger.info('Building ccedict pickle from %s', self.cedictfile)
         with open(self.cedictfile) as f:
             text: str = f.read()
             lines: list[str] = text.split('\n')

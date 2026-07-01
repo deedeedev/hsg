@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from html.parser import HTMLParser
 from io import StringIO
@@ -15,6 +16,8 @@ from hsg.classes.heisig import Heisig
 from hsg.classes.hsk import HSK
 from hsg.utils.io import get_input
 from hsg.utils.writers import WRITERS, validate_fields
+
+logger = logging.getLogger(__name__)
 
 
 @click.command()
@@ -33,7 +36,11 @@ def stories(text: str | None, file: Any) -> None:
                 'query': f'deck:Cinese::Heisig Hanzi:{hanzi}',
             },
         }
-        response = requests.request('POST', url, json=payload)
+        try:
+            response = requests.request('POST', url, json=payload, timeout=5)
+        except requests.RequestException as e:
+            logger.warning('AnkiConnect not available: %s', e)
+            return []
         ids = cast(list[int], json.loads(response.text)['result'])
         return ids
 
@@ -46,7 +53,11 @@ def stories(text: str | None, file: Any) -> None:
                 'notes': [note_id],
             },
         }
-        response = requests.request('POST', url, json=payload)
+        try:
+            response = requests.request('POST', url, json=payload, timeout=5)
+        except requests.RequestException as e:
+            logger.warning('AnkiConnect not available: %s', e)
+            return None
         notes = cast(list[dict[str, Any]], json.loads(response.text)['result'])
         if len(notes) > 0:
             return notes[0]

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'phase*']
+  pull_request:
+
+jobs:
+  lint-type-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install package (no clipboard extra)
+        run: uv pip install --system -e ".[dev]"
+
+      - name: Ruff check
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Mypy strict
+        run: mypy --strict hsg
+
+      - name: Pytest with coverage
+        run: pytest --cov=hsg --cov-report=term --cov-fail-under=70

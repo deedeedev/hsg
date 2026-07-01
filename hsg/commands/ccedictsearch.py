@@ -58,6 +58,6 @@ def search(
     max_hsk: str,
     max_results: int,
     all_results: bool,
-):
+) -> None:
     ce: Ccedict = Ccedict(CCEDICT_CSV, frequencies_corpus)
     ce.search(query, exact, show_traditional, format, sort, reverse, max_hsk, max_results, all_results)

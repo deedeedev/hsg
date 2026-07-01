@@ -10,9 +10,6 @@ from tabulate import tabulate
 
 from hsg.utils.constants import ADDITIONAL_CHARACTERS, HEISIG_CSV, TATOEBA_CSV
 
-# TODO utilizzare click per l'output colorato al posto di rich (https://click.palletsprojects.com/en/8.0.x/utils/#ansi-colors)
-
-
 Frame = dict[str, str]
 Sentence = dict[str, str | list[str]]
 
@@ -64,30 +61,25 @@ class TatoebaHeisig:
     def get_all_allowed_sentences(self) -> None:
         self.load_tatoeba()
         self.load_heisig()
-        count = 0
         allowed: list[str] = self.get_allowed_characters()
         for sentence in self.tatoeba:
             if self.maxframe == -1 or all(char in allowed for char in sentence):
                 self.allowed_sentences.append({'hanzi': sentence, 'translations': self.tatoeba[sentence]})
-                count += 1
 
-    # find all allowed sentences containing keyword
-    def find_sentences(self, keyword, max_sentences, reverse):
+    def find_sentences(self, keyword: str, max_sentences: int, reverse: bool) -> list[Sentence]:
         if not self.allowed_sentences:
             self.get_all_allowed_sentences()
         sentences = [sentence for sentence in self.allowed_sentences if keyword in sentence['hanzi']]
-        # longer sentences first
         return sorted(sentences, key=lambda x: len(x['hanzi']), reverse=reverse)[:max_sentences]
 
-    # get n allowed sentences of length >= minlength
-    def find_random_sentences(self, number, minlength, reverse):
+    def find_random_sentences(self, number: int, minlength: int, reverse: bool) -> list[Sentence]:
         if not self.allowed_sentences:
             self.get_all_allowed_sentences()
         minlength_sentences = [sentence for sentence in self.allowed_sentences if len(sentence['hanzi']) >= minlength]
         minlength_sentences = random.sample(minlength_sentences, number)
         return sorted(minlength_sentences, key=lambda x: len(x['hanzi']), reverse=reverse)
 
-    def print_sentences(self, sentences, format):
+    def print_sentences(self, sentences: list[Sentence], format: str) -> None:
         for s in sentences:
             s['pinyin'] = ' '.join([p[0] for p in pinyin(s['hanzi'])])
         if format == 'csv':
@@ -118,16 +110,12 @@ class TatoebaHeisig:
 def sentences(
     keyword: str, max_frame: int, all_characters: bool, max_sentences: int, reverse: bool, format: str
 ) -> None:
-    """
-    Returns all sentences from the Tatoeba corpus with the specified keyword
-
-    python heisigtatoeba.py sentences -m 1500 -n 20 "爱"
-    """
+    """Returns all sentences from the Tatoeba corpus with the specified keyword"""
     if all_characters:
         max_frame = -1
     ht = TatoebaHeisig(TATOEBA_CSV, HEISIG_CSV, max_frame)
-    sentences = ht.find_sentences(keyword, max_sentences, reverse)
-    ht.print_sentences(sentences, format)
+    found = ht.find_sentences(keyword, max_sentences, reverse)
+    ht.print_sentences(found, format)
 
 
 @click.command(name='random')
@@ -148,13 +136,9 @@ def sentences(
 def random_sentences(
     max_frame: int, all_characters: bool, sentences_number: int, min_length: int, reverse: bool, format: str
 ) -> None:
-    """
-    Returns random sentences from the Tatoeba corpus with the specified keyword
-
-    python heisigtatoeba.py sentences -m 1500 -n 10 -l 10
-    """
+    """Returns random sentences from the Tatoeba corpus with the specified keyword"""
     if all_characters:
         max_frame = -1
     ht = TatoebaHeisig(TATOEBA_CSV, HEISIG_CSV, max_frame)
-    sentences = ht.find_random_sentences(sentences_number, min_length, reverse)
-    ht.print_sentences(sentences, format)
+    found = ht.find_random_sentences(sentences_number, min_length, reverse)
+    ht.print_sentences(found, format)

@@ -1,4 +1,5 @@
 import sys
+from typing import Any
 
 import click
 
@@ -8,22 +9,19 @@ except ImportError:
     clipboard = None
 
 
-def get_input(text, file):
-    """
-    Gets input from argument, then stdin, then clipboard.
-    """
+def get_input(text: str | None, file: Any) -> str:
+    """Gets input from argument, then stdin, then clipboard."""
     if text:
-        # text argument
         return text
     elif file and not sys.stdin.isatty():
         with file:
-            # 1st fallback: stdin
-            return file.read()
+            result: str = file.read()
+            return result
     else:
-        # 2nd fallback: clipboard
         if clipboard is None:
             raise click.UsageError(
                 "no text argument or stdin provided and the 'clipboard' "
                 'extra is not installed; install with `pip install hsg[clipboard]`'
             )
-        return clipboard.paste()
+        clip_text: str = clipboard.paste()
+        return clip_text

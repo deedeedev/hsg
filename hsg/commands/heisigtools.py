@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import json
 import sys
 from html.parser import HTMLParser
 from io import StringIO
+from typing import Any, cast
 
 import click
 import requests
@@ -17,13 +20,11 @@ from hsg.utils.writers import WRITERS, validate_fields
 @click.command()
 @click.argument('text', required=False)
 @click.option('-f', '--file', type=click.File('r'), default=sys.stdin)
-def stories(text, file):
-    """
-    Parses a text and returns a list of Heisig stories.
-    If no text is passed as argument fallbacks to stdin then clipboard
-    """
+def stories(text: str | None, file: Any) -> None:
+    """Parses a text and returns a list of Heisig stories.
+    If no text is passed as argument fallbacks to stdin then clipboard"""
 
-    def find_notes(hanzi):
+    def find_notes(hanzi: str) -> list[int]:
         url = 'http://localhost:8765'
         payload = {
             'action': 'findNotes',
@@ -33,25 +34,25 @@ def stories(text, file):
             },
         }
         response = requests.request('POST', url, json=payload)
-        ids = json.loads(response.text)['result']
+        ids = cast(list[int], json.loads(response.text)['result'])
         return ids
 
-    def get_note(id):
+    def get_note(note_id: int) -> dict[str, Any] | None:
         url = 'http://localhost:8765'
         payload = {
             'action': 'notesInfo',
             'version': 6,
             'params': {
-                'notes': [id],
+                'notes': [note_id],
             },
         }
         response = requests.request('POST', url, json=payload)
-        notes = json.loads(response.text)['result']
+        notes = cast(list[dict[str, Any]], json.loads(response.text)['result'])
         if len(notes) > 0:
             return notes[0]
         return None
 
-    def get_data(hanzi):
+    def get_data(hanzi: str) -> dict[str, str] | None:
         ids = find_notes(hanzi)
         if ids:
             note = get_note(ids[0])
@@ -66,26 +67,26 @@ def stories(text, file):
         return None
 
     class MLStripper(HTMLParser):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.reset()
             self.strict = False
             self.convert_charrefs = True
             self.text = StringIO()
 
-        def handle_data(self, d):
+        def handle_data(self, d: str) -> None:
             self.text.write(d)
 
-        def get_data(self):
+        def get_data(self) -> str:
             return self.text.getvalue()
 
-    def strip_tags(html):
+    def strip_tags(html: str) -> str:
         s = MLStripper()
         s.feed(html)
         return s.get_data()
 
-    input = get_input(text, file)
-    chars = [c for c in input.replace('\r', '').replace('\n', '').strip()]
+    input_text = get_input(text, file)
+    chars = list(input_text.replace('\r', '').replace('\n', '').strip())
     for idx, char in enumerate(chars):
         data = get_data(char)
         if not data:
@@ -139,17 +140,26 @@ def stories(text, file):
 )
 @click.option('-v', '--verbose', required=False, is_flag=True)
 def parse(
-    text, file, max_frame, only_known, only_unknown, unique, format, sort, frequencies_corpus, reverse, fields, verbose
-):
-    """
-    Parses a text and returns a list of Heisig frames.
+    text: str | None,
+    file: Any,
+    max_frame: int,
+    only_known: bool,
+    only_unknown: bool,
+    unique: bool,
+    format: str,
+    sort: str,
+    frequencies_corpus: str,
+    reverse: bool,
+    fields: list[str],
+    verbose: bool,
+) -> None:
+    """Parses a text and returns a list of Heisig frames.
 
-    If no text is passed as argument fallbacks to stdin then clipboard
-    """
+    If no text is passed as argument fallbacks to stdin then clipboard"""
     hsg = Heisig(frequencies_corpus, max_frame)
     hsk = HSK()
-    input = get_input(text, file)
-    chars = [c for c in input.replace('\r', '').replace('\n', '').strip() if not hsg.is_additional_character(c)]
+    input_text = get_input(text, file)
+    chars = [c for c in input_text.replace('\r', '').replace('\n', '').strip() if not hsg.is_additional_character(c)]
     statistics = hsg.get_statistics(chars)
 
     # select data to output based on options
@@ -165,7 +175,7 @@ def parse(
         chars = sorted(chars, key=lambda x: statistics['frequencies'][x]['occurrencies'], reverse=not reverse)
 
     # prepare data for output
-    data = []
+    data: list[list[Any]] = []
     for char in chars:
         occurrencies = (
             f'{statistics["frequencies"][char]["occurrencies"]} ({statistics["frequencies"][char]["percent"]}%)'
@@ -173,7 +183,6 @@ def parse(
         hsk_level = hsk.get_hsk_new_char_level(char) if hsk.get_hsk_new_char_level(char) else ''
         if char in hsg.heisig:
             info = hsg.get_frame_info(char)
-            # known = '' if hsg.is_known(char) else '*'
             item = {
                 'known': '' if hsg.is_known(char) else '*',
                 'hanzi': info['hanzi'],
@@ -195,12 +204,12 @@ def parse(
                 'keyword': '',
                 'occurrencies': occurrencies,
             }
-        # filter fields to show
-        item = [item[field] for field in fields]
-        data.append(item)
+        item_list = [item[field] for field in fields]
+        data.append(item_list)
 
     # output data
-    WRITERS[format](fields).writerows(data)
+    writer_cls = WRITERS[format]
+    writer_cls(fields).writerows(data)  # type: ignore[call-arg]
 
     # output stats
     if verbose:
@@ -223,15 +232,13 @@ def parse(
 @click.option('-f', '--file', required=False, type=click.File('r'), default=sys.stdin)
 @click.option('-m', '--max-frame', type=click.INT, default=-1)
 @click.option('-v', '--verbose', required=False, is_flag=True)
-def enrich(text, file, max_frame, verbose):
-    """
-    Parses a text and highlights unknown Heisig frames (blue) and non-Heisig characters (red).
+def enrich(text: str | None, file: Any, max_frame: int, verbose: bool) -> None:
+    """Parses a text and highlights unknown Heisig frames (blue) and non-Heisig characters (red).
 
-    If no text is passed as argument fallbacks to stdin then clipboard
-    """
+    If no text is passed as argument fallbacks to stdin then clipboard"""
     hsg = Heisig('subtlexch', max_frame)
-    input = get_input(text, file)
-    chars = [c for c in input.strip()]
+    input_text = get_input(text, file)
+    chars = list(input_text.strip())
     statistics = hsg.get_statistics(chars)
 
     # output data
@@ -260,7 +267,7 @@ def enrich(text, file, max_frame, verbose):
         )
 
 
-@click.command()
+@click.command(name='list')
 @click.option('--min', type=click.INT, default=0)
 @click.option('--max', type=click.INT, default=9999)
 @click.option('-s', '--sort', type=click.Choice(['frame', 'frequency']), default='frame')
@@ -281,10 +288,16 @@ def enrich(text, file, max_frame, verbose):
     help='Output format (default csv).',
 )
 @click.option('-m', '--max-results', required=False, type=click.INT, default=-1, help='Show max n results.')
-def list(min, max, sort, frequencies_corpus, reverse, format, max_results):
-    """
-    Prints Heisig frames data.
-    """
+def list_frames(
+    min: int,
+    max: int,
+    sort: str,
+    frequencies_corpus: str,
+    reverse: bool,
+    format: str,
+    max_results: int,
+) -> None:
+    """Prints Heisig frames data."""
     hsg = Heisig(frequencies_corpus)
     frames = [frame for idx, frame in enumerate(hsg.heisig.values()) if idx + 1 >= min and idx + 1 <= max]
     if sort == 'frame' and reverse:

@@ -14,3 +14,15 @@ class Frequency(metaclass=ABCMeta):
     @abstractmethod
     def find_word(self, word: str) -> dict[str, Any] | None:
         raise NotImplementedError
+
+    def get_most_frequent_lemmas(
+        self,
+        type: str = 'chars',
+        num: int = -1,
+        skip_heisig: bool = False,
+        only_heisig: bool = False,
+        min_length: int = 1,
+        sort: str = 'rank',
+        reverse: bool = False,
+    ) -> list[dict[str, Any]]:
+        raise NotImplementedError

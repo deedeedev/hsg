@@ -7,24 +7,13 @@ from hsg.utils.constants import HEISIG_CSV, RMW_FREQUENCIES_CHARS_CSV, RMW_FREQU
 
 
 class RenMinWang(Frequency):
-    def __init__(self):
-        self.char_freq: list[Any] = self.load_csv(RMW_FREQUENCIES_CHARS_CSV)
-        self.word_freq: list[Any] = self.load_csv(RMW_FREQUENCIES_WORDS_CSV)
+    def __init__(self) -> None:
+        self.char_freq: list[dict[str, Any]] = self.load_csv(RMW_FREQUENCIES_CHARS_CSV)
+        self.word_freq: list[dict[str, Any]] = self.load_csv(RMW_FREQUENCIES_WORDS_CSV)
         self.chars: dict[str, Any] = self.create_dict(self.char_freq)
         self.words: dict[str, Any] = self.create_dict(self.word_freq)
 
-    """
-    cd -> corpus documents
-
-    count: numero di volte in cui appare il lemma nell'intero corpus
-    count_million: numero di volte in cui appare il lemma per milione di parole nell'intero corpus
-    count_log: numero di volte in cui appare il lemma nell'intero corpus su scala logaritmica
-    cd: numero di documenti in cui appare il lemma
-    cd_percent: percentuale di documenti in cui appare il lemma
-    cd_log: numero di documenti in cui appare il lemma su scala logaritmica
-    """
-
-    def load_csv(self, csvfile: str) -> list[Any]:
+    def load_csv(self, csvfile: str) -> list[dict[str, Any]]:
         with open(csvfile) as f:
             fields = (
                 'lemma',
@@ -40,11 +29,11 @@ class RenMinWang(Frequency):
             reader = csv.DictReader(f, fieldnames=fields, delimiter='\t')
             reader_no_headers = list(reader)[3:]  # skip first 3 lines
             for idx, lemma in enumerate(reader_no_headers):
-                lemma['rank'] = idx + 1  # type: ignore
-                lemma['count_x_cd'] = int(lemma['count']) * int(lemma['cd'])  # type: ignore
+                lemma['rank'] = idx + 1
+                lemma['count_x_cd'] = int(lemma['count']) * int(lemma['cd'])
             return reader_no_headers
 
-    def create_dict(self, lemmas: list[Any]) -> dict[str, Any]:
+    def create_dict(self, lemmas: list[dict[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
         for lemma in lemmas:
             result[lemma['lemma']] = lemma
@@ -62,9 +51,10 @@ class RenMinWang(Frequency):
         num: int = -1,
         skip_heisig: bool = False,
         only_heisig: bool = False,
+        min_length: int = 1,
         sort: str = 'rank',
         reverse: bool = False,
-    ) -> list[Any]:
+    ) -> list[dict[str, Any]]:
         lemmas = self.char_freq if type == 'chars' else self.word_freq
         if num == -1:
             num = len(lemmas)
@@ -78,10 +68,3 @@ class RenMinWang(Frequency):
                 lemmas = [lemma for lemma in lemmas if lemma['lemma'] in heisig_characters]
         data = sorted(lemmas, key=lambda x: x[sort], reverse=reverse)
         return data[:num]
-
-
-if __name__ == '__main__':
-    fq = RenMinWang()
-
-    # print(fq.find_char('引'))
-    # print(fq.find_word('中国'))

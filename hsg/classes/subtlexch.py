@@ -12,8 +12,18 @@ from hsg.utils.constants import (
 
 
 class SubtlexCh(Frequency):
-    FIELDS = ('lemma', 'count', 'count_million', 'count_log', 'cd', 'cd_percent', 'cd_log', 'rank', 'count_x_cd')
-    FIELDS_POS = (
+    FIELDS: list[str] = [
+        'lemma',
+        'count',
+        'count_million',
+        'count_log',
+        'cd',
+        'cd_percent',
+        'cd_log',
+        'rank',
+        'count_x_cd',
+    ]
+    FIELDS_POS: list[str] = [
         'lemma',
         'length',
         'pinyin',
@@ -31,8 +41,8 @@ class SubtlexCh(Frequency):
         'translation',
         'rank',
         'count_x_cd',
-    )
-    POS = {
+    ]
+    POS: dict[str, str] = {
         'a': 'adjective',
         'ad': 'adjective as adverbial',
         'ag': 'adjective morpheme',
@@ -77,24 +87,24 @@ class SubtlexCh(Frequency):
         'z': 'descriptive',
     }
 
-    def __init__(self):
-        self.char_freq: list[Any] = self.load_csv(SUBTLEX_CH_CHARS_CSV, self.FIELDS)
-        self.word_freq: list[Any] = self.load_csv(SUBTLEX_CH_WORDS_CSV, self.FIELDS)
-        self.word_pos_freq: list[Any] = self.load_csv(SUBTLEX_CH_WORDS_POS_COMBINED_CSV, self.FIELDS_POS)
-        self.chars = self.create_dict(self.char_freq)
-        self.words = self.create_dict(self.word_freq)
-        self.words_pos = self.create_dict(self.word_pos_freq)
+    def __init__(self) -> None:
+        self.char_freq: list[dict[str, Any]] = self.load_csv(SUBTLEX_CH_CHARS_CSV, self.FIELDS)
+        self.word_freq: list[dict[str, Any]] = self.load_csv(SUBTLEX_CH_WORDS_CSV, self.FIELDS)
+        self.word_pos_freq: list[dict[str, Any]] = self.load_csv(SUBTLEX_CH_WORDS_POS_COMBINED_CSV, self.FIELDS_POS)
+        self.chars: dict[str, Any] = self.create_dict(self.char_freq)
+        self.words: dict[str, Any] = self.create_dict(self.word_freq)
+        self.words_pos: dict[str, Any] = self.create_dict(self.word_pos_freq)
 
-    def load_csv(self, csvfile: str, fields: list[str]) -> list[Any]:
+    def load_csv(self, csvfile: str, fields: list[str]) -> list[dict[str, Any]]:
         with open(csvfile) as f:
             reader = csv.DictReader(f, fieldnames=fields, delimiter='\t')
             reader_no_headers = list(reader)[3:]  # skip first 3 lines
             for idx, lemma in enumerate(reader_no_headers):
-                lemma['rank'] = idx + 1  # type: ignore
-                lemma['count_x_cd'] = int(lemma['count']) * int(lemma['cd'])  # type: ignore
+                lemma['rank'] = idx + 1
+                lemma['count_x_cd'] = int(lemma['count']) * int(lemma['cd'])
             return reader_no_headers
 
-    def create_dict(self, lemmas: list[Any]) -> dict[str, Any]:
+    def create_dict(self, lemmas: list[dict[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
         for lemma in lemmas:
             result[lemma['lemma']] = lemma
@@ -115,11 +125,10 @@ class SubtlexCh(Frequency):
             return (data['dominant_pos'], all_pos_dict)
         return None
 
-    def get_words_by_pos(self, pos: str, strict: bool = True):
+    def get_words_by_pos(self, pos: str, strict: bool = True) -> list[dict[str, Any]]:
         if strict:
             return [w for w in self.word_pos_freq if w['dominant_pos'] == pos]
-        else:
-            return [w for w in self.word_pos_freq if pos in [p.lower() for p in w['all_pos'].split('.')]]
+        return [w for w in self.word_pos_freq if pos in [p.lower() for p in w['all_pos'].split('.')]]
 
     def get_most_frequent_lemmas(
         self,
@@ -130,7 +139,7 @@ class SubtlexCh(Frequency):
         min_length: int = 1,
         sort: str = 'rank',
         reverse: bool = False,
-    ) -> list[Any]:
+    ) -> list[dict[str, Any]]:
         lemmas = self.char_freq if type == 'chars' else self.word_freq
         if num == -1:
             num = len(lemmas)
@@ -148,23 +157,3 @@ class SubtlexCh(Frequency):
             lemmas = [lemma for lemma in lemmas if len(lemma['lemma']) >= min_length]
         lemmas = sorted(lemmas, key=lambda x: x[sort], reverse=reverse)
         return lemmas[:num]
-
-
-if __name__ == '__main__':
-    fq = SubtlexCh()
-
-    # print(fq.find_char('引'))
-    # print(fq.find_word('中国'))
-    # fq.print_most_frequent_words(10)
-
-    # print(fq.find_pos('中国'))
-    # print(fq.find_pos('爱好'))
-    # print(fq.find_pos('奥'))
-    # print(fq.find_pos('继续'))
-
-    # data = [(pos, len(fq.get_words_by_pos(pos))) for pos in fq.POS]
-    # for p in sorted(data, key=lambda x: x[1], reverse=True):
-    #     print(p)
-
-    for w in fq.get_words_by_pos('rg'):
-        print(w['rank'], w['lemma'], w['translation'])

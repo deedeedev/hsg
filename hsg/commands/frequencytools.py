@@ -1,10 +1,13 @@
 import csv
 import json
 import sys
+from typing import Any
 
 import click
+from rich import print
 from tabulate import tabulate
 
+from hsg.classes.frequency import Frequency
 from hsg.classes.renminwang import RenMinWang
 from hsg.classes.subtlexch import SubtlexCh
 from hsg.utils.io import get_input
@@ -53,31 +56,31 @@ from hsg.utils.io import get_input
     help='Output format (default tabulate).',
 )
 def search(
-    text,
-    file,
-    skip_clipboard,
-    max_results,
-    skip_heisig,
-    only_heisig,
-    type,
-    min_length,
-    sort,
-    reverse,
-    frequencies_corpus,
-    format,
-):
-    fq = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
+    text: str | None,
+    file: Any,
+    skip_clipboard: bool,
+    max_results: int,
+    skip_heisig: bool,
+    only_heisig: bool,
+    type: str,
+    min_length: int,
+    sort: str,
+    reverse: bool,
+    frequencies_corpus: str,
+    format: str,
+) -> None:
+    fq: Frequency = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
     lemmas = fq.get_most_frequent_lemmas(type, max_results, skip_heisig, only_heisig, min_length, sort, reverse)
 
     # filter results by text input
-    input = get_input(text, file)
-    if input and not skip_clipboard:
-        chars = list(input.replace('\r', '').replace('\n', '').strip())
+    input_text = get_input(text, file)
+    if input_text and not skip_clipboard:
+        chars = list(input_text.replace('\r', '').replace('\n', '').strip())
         lemmas = [lemma for lemma in lemmas if lemma['lemma'] in chars]
 
     if lemmas:
         if format == 'csv':
-            writer = csv.DictWriter(
+            writer: csv.DictWriter[str] = csv.DictWriter(
                 sys.stdout, fieldnames=list(lemmas[0].keys()), delimiter='\t', extrasaction='ignore'
             )
             writer.writeheader()

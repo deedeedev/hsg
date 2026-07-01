@@ -1,18 +1,23 @@
 import csv
 import json
+import logging
 import os
 import pickle
 import re
 import sys
 from enum import Enum
+from typing import Any
 
 from rich import print
 from tabulate import tabulate
 
+from hsg.classes.frequency import Frequency
 from hsg.classes.hsk import HSK
 from hsg.classes.renminwang import RenMinWang
 from hsg.classes.subtlexch import SubtlexCh
 from hsg.utils.constants import ADDITIONAL_CHARACTERS, ASSETS_DIR_PATH
+
+logger = logging.getLogger(__name__)
 
 
 class QueryType(Enum):
@@ -24,16 +29,18 @@ class QueryType(Enum):
 class Ccedict:
     def __init__(self, cedictfile: str, frequencies_corpus: str) -> None:
         self.cedictfile: str = cedictfile
-        self.dictionary: list[dict] = []
-        self.fq = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
+        self.dictionary: list[dict[str, Any]] = []
+        self.fq: Frequency = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
         self.hsk: HSK = HSK()
+        self.dict_lines: list[str] = []
         self.load_dict()
 
     def load_dict(self) -> None:
         pickle_dict = os.path.join(ASSETS_DIR_PATH, 'ccedict.pickle')
         if os.path.isfile(pickle_dict):
             with open(pickle_dict, 'rb') as d:
-                self.dictionary = pickle.load(d)
+                loaded: list[dict[str, Any]] = pickle.load(d)
+                self.dictionary = loaded
                 return
         with open(self.cedictfile) as f:
             text: str = f.read()
@@ -75,8 +82,10 @@ class Ccedict:
                 self.dictionary.pop(x)
 
     def get_query_type(self, query: str) -> str:
-        pattern_hanzi = re.compile('^[^' + ADDITIONAL_CHARACTERS.replace('[', r'\[').replace(']', r'\]') + ']*$')
-        pattern_pinyin: re.Pattern = re.compile(r'[a-z:]{2,5}\d')
+        pattern_hanzi: re.Pattern[str] = re.compile(
+            '^[^' + ADDITIONAL_CHARACTERS.replace('[', r'\[').replace(']', r'\]') + ']*$'
+        )
+        pattern_pinyin: re.Pattern[str] = re.compile(r'[a-z:]{2,5}\d')
         if pattern_hanzi.match(query):
             return QueryType.SIMPLIFIED.value
         elif pattern_pinyin.match(query):
@@ -100,7 +109,7 @@ class Ccedict:
         search_field: str = self.get_query_type(query)
         query = query.replace(' ', '').lower()
 
-        words: list[dict] = []
+        words: list[dict[str, Any]] = []
         if exact:
             words = [w for w in self.dictionary if w[search_field].replace(' ', '').lower() == query]
         else:
@@ -124,14 +133,14 @@ class Ccedict:
 
         self.output(words, format)
 
-    def sort_key(self, value: str | int):
+    def sort_key(self, value: str | int) -> int:
         if value == '7-9':
             return 7
         return int(value) if value else sys.maxsize
 
-    def output(self, words: list[dict], format: str) -> None:
+    def output(self, words: list[dict[str, Any]], format: str) -> None:
         if format == 'csv':
-            writer: csv.DictWriter = csv.DictWriter(
+            writer: csv.DictWriter[str] = csv.DictWriter(
                 sys.stdout, fieldnames=list(words[0].keys()), delimiter='\t', extrasaction='ignore'
             )
             writer.writeheader()

@@ -40,11 +40,11 @@ class JsonWriter(Writer):
 
     def writerow(self, rowdata: list) -> None:
         row = dict(zip(self.keys, rowdata))
-        json.dumps(row)
+        print(json.dumps(row, ensure_ascii=False))
 
     def writerows(self, data: list[list]) -> None:
         rows = [dict(zip(self.keys, row)) for row in data]
-        print(rows)
+        print(json.dumps(rows, ensure_ascii=False))
 
 
 class TabulateWriter(Writer):

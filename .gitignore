@@ -3,4 +3,4 @@ __pycache__/
 hsg.egg-info
 build/
 
-*.pickle
+*.pickle.coverage

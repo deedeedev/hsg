@@ -1,14 +1,13 @@
-import sys
 import csv
 import json
-import click
-
+import sys
 from abc import ABCMeta, abstractmethod
+
+import click
 from tabulate import tabulate
 
 
 class Writer(metaclass=ABCMeta):
-
     @abstractmethod
     def writerow(self, rowdata: list) -> None:
         pass
@@ -19,7 +18,6 @@ class Writer(metaclass=ABCMeta):
 
 
 class CsvWriter(Writer):
-
     def __init__(self, headers: list[str]) -> None:
         self.headers = headers
         self.writer = csv.writer(sys.stdout, delimiter='\t')
@@ -34,21 +32,19 @@ class CsvWriter(Writer):
 
 
 class JsonWriter(Writer):
-
     def __init__(self, keys: list[str]) -> None:
         self.keys = keys
 
     def writerow(self, rowdata: list) -> None:
-        row = dict(zip(self.keys, rowdata))
+        row = dict(zip(self.keys, rowdata, strict=False))
         print(json.dumps(row, ensure_ascii=False))
 
     def writerows(self, data: list[list]) -> None:
-        rows = [dict(zip(self.keys, row)) for row in data]
+        rows = [dict(zip(self.keys, row, strict=False)) for row in data]
         print(json.dumps(rows, ensure_ascii=False))
 
 
 class TabulateWriter(Writer):
-
     def __init__(self, headers: list[str]) -> None:
         self.headers = headers
 
@@ -69,7 +65,7 @@ WRITERS = {
 def validate_fields(ctx, param, fields):
     valid = True
     unsupported_fields = []
-    if type(fields) == str:
+    if isinstance(fields, str):
         fields = fields.split(',')
     if len(fields) == 0:
         valid = False
@@ -80,4 +76,4 @@ def validate_fields(ctx, param, fields):
     if valid:
         return fields
     else:
-        raise click.BadParameter(f"unsupported field(s): {', '.join(unsupported_fields)}")
+        raise click.BadParameter(f'unsupported field(s): {", ".join(unsupported_fields)}')

@@ -1,10 +1,10 @@
 import click
 
-from hsg.commands.heisigtools import stories, parse, enrich
-from hsg.commands.heisigtools import list as list_cmd
-from hsg.commands.heisigtatoeba import sentences, random_sentences
 from hsg.commands.ccedictsearch import search as lookup
 from hsg.commands.frequencytools import search as freq
+from hsg.commands.heisigtatoeba import random_sentences, sentences
+from hsg.commands.heisigtools import enrich, parse, stories
+from hsg.commands.heisigtools import list as list_cmd
 
 
 @click.group()

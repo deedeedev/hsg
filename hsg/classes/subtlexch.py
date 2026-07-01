@@ -1,17 +1,37 @@
 import csv
-
 from operator import xor
-from typing import Any, Optional
+from typing import Any
 
 from hsg.classes.frequency import Frequency
-from hsg.utils.constants import SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV, SUBTLEX_CH_WORDS_POS_COMBINED_CSV, HEISIG_CSV
+from hsg.utils.constants import (
+    HEISIG_CSV,
+    SUBTLEX_CH_CHARS_CSV,
+    SUBTLEX_CH_WORDS_CSV,
+    SUBTLEX_CH_WORDS_POS_COMBINED_CSV,
+)
 
 
 class SubtlexCh(Frequency):
-
     FIELDS = ('lemma', 'count', 'count_million', 'count_log', 'cd', 'cd_percent', 'cd_log', 'rank', 'count_x_cd')
-    FIELDS_POS = ('lemma', 'length', 'pinyin', 'pinyin_input', 'count', 'count_million', 'count_log', 'cd', 'cd_percent',
-                  'cd_log', 'dominant_pos', 'dominant_pos_freq', 'all_pos', 'all_pos_freq', 'translation', 'rank', 'count_x_cd')
+    FIELDS_POS = (
+        'lemma',
+        'length',
+        'pinyin',
+        'pinyin_input',
+        'count',
+        'count_million',
+        'count_log',
+        'cd',
+        'cd_percent',
+        'cd_log',
+        'dominant_pos',
+        'dominant_pos_freq',
+        'all_pos',
+        'all_pos_freq',
+        'translation',
+        'rank',
+        'count_x_cd',
+    )
     POS = {
         'a': 'adjective',
         'ad': 'adjective as adverbial',
@@ -66,7 +86,7 @@ class SubtlexCh(Frequency):
         self.words_pos = self.create_dict(self.word_pos_freq)
 
     def load_csv(self, csvfile: str, fields: list[str]) -> list[Any]:
-        with open(csvfile, 'r') as f:
+        with open(csvfile) as f:
             reader = csv.DictReader(f, fieldnames=fields, delimiter='\t')
             reader_no_headers = list(reader)[3:]  # skip first 3 lines
             for idx, lemma in enumerate(reader_no_headers):
@@ -74,11 +94,11 @@ class SubtlexCh(Frequency):
                 lemma['count_x_cd'] = int(lemma['count']) * int(lemma['cd'])  # type: ignore
             return reader_no_headers
 
-    def create_dict(self, list) -> dict[str, Any]:
-        dict = {}
-        for l in list:
-            dict[l['lemma']] = l
-        return dict
+    def create_dict(self, lemmas: list[Any]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for lemma in lemmas:
+            result[lemma['lemma']] = lemma
+        return result
 
     def find_char(self, char: str) -> dict[str, Any] | None:
         return self.chars.get(char)
@@ -86,7 +106,7 @@ class SubtlexCh(Frequency):
     def find_word(self, word: str) -> dict[str, Any] | None:
         return self.words.get(word)
 
-    def find_pos(self, word: str) -> Optional[tuple[str, dict[str, int]]]:
+    def find_pos(self, word: str) -> tuple[str, dict[str, int]] | None:
         data = self.words_pos.get(word)
         if data:
             all_pos = [p for p in data['all_pos'].split('.') if p]
@@ -101,28 +121,31 @@ class SubtlexCh(Frequency):
         else:
             return [w for w in self.word_pos_freq if pos in [p.lower() for p in w['all_pos'].split('.')]]
 
-    def get_most_frequent_lemmas(self, type: str = 'chars', num: int = -1, skip_heisig: bool = False, only_heisig: bool = False, min_length: int = 1, sort: str = 'rank',
-                                 reverse: bool = False) -> list[Any]:
-        # chars / words
-        if type == 'chars':
-            lemmas = self.char_freq
-        else:
-            lemmas = self.word_freq
+    def get_most_frequent_lemmas(
+        self,
+        type: str = 'chars',
+        num: int = -1,
+        skip_heisig: bool = False,
+        only_heisig: bool = False,
+        min_length: int = 1,
+        sort: str = 'rank',
+        reverse: bool = False,
+    ) -> list[Any]:
+        lemmas = self.char_freq if type == 'chars' else self.word_freq
         if num == -1:
             num = len(lemmas)
         # skip heisig characters?
         if xor(skip_heisig, only_heisig):
-            with open(HEISIG_CSV, 'r') as f:
+            with open(HEISIG_CSV) as f:
                 reader = csv.reader(f, delimiter='\t')
                 heisig_characters = [r[0] for r in reader]
             if skip_heisig:
-                lemmas = [l for l in lemmas if not l['lemma'] in heisig_characters]
+                lemmas = [lemma for lemma in lemmas if lemma['lemma'] not in heisig_characters]
             if only_heisig:
-                lemmas = [l for l in lemmas if l['lemma'] in heisig_characters]
+                lemmas = [lemma for lemma in lemmas if lemma['lemma'] in heisig_characters]
         # minimum length
         if min_length > 1:
-            lemmas = [l for l in lemmas if len(l['lemma']) >= min_length]
-            # lemmas = list(filter(lambda x: len(x['lemma']) >= min_length, lemmas))
+            lemmas = [lemma for lemma in lemmas if len(lemma['lemma']) >= min_length]
         lemmas = sorted(lemmas, key=lambda x: x[sort], reverse=reverse)
         return lemmas[:num]
 

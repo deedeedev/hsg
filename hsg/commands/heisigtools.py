@@ -1,12 +1,12 @@
-import sys
 import json
-import requests
-from io import StringIO
+import sys
 from html.parser import HTMLParser
+from io import StringIO
 
 import click
+import requests
+from pypinyin import Style, pinyin
 from rich import print
-from pypinyin import pinyin, lazy_pinyin, Style
 
 from hsg.classes.heisig import Heisig
 from hsg.classes.hsk import HSK
@@ -24,29 +24,29 @@ def stories(text, file):
     """
 
     def find_notes(hanzi):
-        url = "http://localhost:8765"
+        url = 'http://localhost:8765'
         payload = {
-            "action": "findNotes",
-            "version": 6,
-            "params": {
-                "query": f"deck:Cinese::Heisig Hanzi:{hanzi}",
-            }
+            'action': 'findNotes',
+            'version': 6,
+            'params': {
+                'query': f'deck:Cinese::Heisig Hanzi:{hanzi}',
+            },
         }
-        response = requests.request("POST", url, json=payload)
-        ids = json.loads(response.text)["result"]
+        response = requests.request('POST', url, json=payload)
+        ids = json.loads(response.text)['result']
         return ids
 
     def get_note(id):
-        url = "http://localhost:8765"
+        url = 'http://localhost:8765'
         payload = {
-            "action": "notesInfo",
-            "version": 6,
-            "params": {
-                "notes": [id],
-            }
+            'action': 'notesInfo',
+            'version': 6,
+            'params': {
+                'notes': [id],
+            },
         }
-        response = requests.request("POST", url, json=payload)
-        notes = json.loads(response.text)["result"]
+        response = requests.request('POST', url, json=payload)
+        notes = json.loads(response.text)['result']
         if len(notes) > 0:
             return notes[0]
         return None
@@ -57,11 +57,11 @@ def stories(text, file):
             note = get_note(ids[0])
             if note:
                 return {
-                    "keyword": note['fields']['Keyword']['value'],
-                    "keyword_ita": note['fields']['KeywordIta']['value'],
-                    "primitive": note['fields']['PrimitiveMeaning']['value'],
-                    "primitive_ita": note['fields']['PrimitiveMeaningIta']['value'],
-                    "story": note['fields']['Story']['value'],
+                    'keyword': note['fields']['Keyword']['value'],
+                    'keyword_ita': note['fields']['KeywordIta']['value'],
+                    'primitive': note['fields']['PrimitiveMeaning']['value'],
+                    'primitive_ita': note['fields']['PrimitiveMeaningIta']['value'],
+                    'story': note['fields']['Story']['value'],
                 }
         return None
 
@@ -89,10 +89,10 @@ def stories(text, file):
     for idx, char in enumerate(chars):
         data = get_data(char)
         if not data:
-            print(f"{char}: NO HEISIG")
+            print(f'{char}: NO HEISIG')
         else:
-            print(f"{char} ({data['keyword']} | {data['keyword_ita']}): {strip_tags(data['story'])}")
-        if (idx < len(chars) - 1):
+            print(f'{char} ({data["keyword"]} | {data["keyword_ita"]}): {strip_tags(data["story"])}')
+        if idx < len(chars) - 1:
             print()
 
 
@@ -103,16 +103,44 @@ def stories(text, file):
 @click.option('-o', '--only-known', required=False, is_flag=True, help='Print only known frames.')
 @click.option('-u', '--only-unknown', required=False, is_flag=True, help='Print only unknown frames.')
 @click.option('-q', '--unique', required=False, is_flag=True, help='Print every character only once.')
-@click.option('-t', '--format', type=click.Choice(['csv', 'json', 'tabulate']), default='csv', help='Output format (default csv).')
-@click.option('-s', '--sort', type=click.Choice(['text', 'frame', 'frequency', 'occurrencies']),
-              default='text', help='Sort characters by original order, heisig frame number or frequency number.')
-@click.option('-c', '--frequencies-corpus', type=click.Choice(['renminwang', 'subtlexch']), default='subtlexch', help='Frequencies data corpus.')
-@click.option('-r', '--reverse', required=False, is_flag=True, default=False, help='Reverse order if sorting by frame or frequency.')
-@click.option('-h', '--fields', required=False, type=click.UNPROCESSED,
-              default=['known', 'hanzi', 'frame', 'frequency', 'hsk', 'pinyin', 'keyword', 'occurrencies'],
-              callback=validate_fields, help='Fields to show.')
+@click.option(
+    '-t', '--format', type=click.Choice(['csv', 'json', 'tabulate']), default='csv', help='Output format (default csv).'
+)
+@click.option(
+    '-s',
+    '--sort',
+    type=click.Choice(['text', 'frame', 'frequency', 'occurrencies']),
+    default='text',
+    help='Sort characters by original order, heisig frame number or frequency number.',
+)
+@click.option(
+    '-c',
+    '--frequencies-corpus',
+    type=click.Choice(['renminwang', 'subtlexch']),
+    default='subtlexch',
+    help='Frequencies data corpus.',
+)
+@click.option(
+    '-r',
+    '--reverse',
+    required=False,
+    is_flag=True,
+    default=False,
+    help='Reverse order if sorting by frame or frequency.',
+)
+@click.option(
+    '-h',
+    '--fields',
+    required=False,
+    type=click.UNPROCESSED,
+    default=['known', 'hanzi', 'frame', 'frequency', 'hsk', 'pinyin', 'keyword', 'occurrencies'],
+    callback=validate_fields,
+    help='Fields to show.',
+)
 @click.option('-v', '--verbose', required=False, is_flag=True)
-def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort, frequencies_corpus, reverse, fields, verbose):
+def parse(
+    text, file, max_frame, only_known, only_unknown, unique, format, sort, frequencies_corpus, reverse, fields, verbose
+):
     """
     Parses a text and returns a list of Heisig frames.
 
@@ -139,8 +167,10 @@ def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort,
     # prepare data for output
     data = []
     for char in chars:
-        occurrencies = f"{statistics['frequencies'][char]['occurrencies']} ({statistics['frequencies'][char]['percent']}%)"
-        hsk_level = hsk.get_hsk_new_char_level(char) if hsk.get_hsk_new_char_level(char) else ""
+        occurrencies = (
+            f'{statistics["frequencies"][char]["occurrencies"]} ({statistics["frequencies"][char]["percent"]}%)'
+        )
+        hsk_level = hsk.get_hsk_new_char_level(char) if hsk.get_hsk_new_char_level(char) else ''
         if char in hsg.heisig:
             info = hsg.get_frame_info(char)
             # known = '' if hsg.is_known(char) else '*'
@@ -174,10 +204,18 @@ def parse(text, file, max_frame, only_known, only_unknown, unique, format, sort,
 
     # output stats
     if verbose:
-        print(f"\r\nKnown characters: {statistics['known']}/{statistics['chars']} ({statistics['known_percent']}%)")
-        print(f"Unknown characters: {statistics['unknown']}/{statistics['chars']} ({statistics['unknown_percent']}%)")
-        print(f"Known unique characters: {statistics['known_unique']}/{statistics['chars_unique']} ({statistics['known_unique_percent']}%)")
-        print(f"Unknown unique characters: {statistics['unknown_unique']}/{statistics['chars_unique']} ({statistics['unknown_unique_percent']}%)\r\n")
+        print(f'\r\nKnown characters: {statistics["known"]}/{statistics["chars"]} ({statistics["known_percent"]}%)')
+        print(f'Unknown characters: {statistics["unknown"]}/{statistics["chars"]} ({statistics["unknown_percent"]}%)')
+        print(
+            f'Known unique characters: {statistics["known_unique"]}'
+            f'/{statistics["chars_unique"]}'
+            f' ({statistics["known_unique_percent"]}%)'
+        )
+        print(
+            f'Unknown unique characters: {statistics["unknown_unique"]}'
+            f'/{statistics["chars_unique"]}'
+            f' ({statistics["unknown_unique_percent"]}%)\r\n'
+        )
 
 
 @click.command()
@@ -192,7 +230,6 @@ def enrich(text, file, max_frame, verbose):
     If no text is passed as argument fallbacks to stdin then clipboard
     """
     hsg = Heisig('subtlexch', max_frame)
-    hsk = HSK()
     input = get_input(text, file)
     chars = [c for c in input.strip()]
     statistics = hsg.get_statistics(chars)
@@ -201,34 +238,55 @@ def enrich(text, file, max_frame, verbose):
     for char in chars:
         if not hsg.is_known(char):
             if char in hsg.heisig:
-                print(f"[bold blue]{char}[/bold blue]", end='')
+                print(f'[bold blue]{char}[/bold blue]', end='')
             else:
-                print(f"[bold red]{char}[/bold red]", end='')
+                print(f'[bold red]{char}[/bold red]', end='')
         else:
-            print(f"[bold white]{char}[/bold white]", end='')
+            print(f'[bold white]{char}[/bold white]', end='')
 
     # output stats
     if verbose:
-        print(f"\r\n\r\nKnown characters: {statistics['known']}/{statistics['chars']} ({statistics['known_percent']}%)")
-        print(f"Unknown characters: {statistics['unknown']}/{statistics['chars']} ({statistics['unknown_percent']}%)")
-        print(f"Known unique characters: {statistics['known_unique']}/{statistics['chars_unique']} ({statistics['known_unique_percent']}%)")
-        print(f"Unknown unique characters: {statistics['unknown_unique']}/{statistics['chars_unique']} ({statistics['unknown_unique_percent']}%)\r\n")
+        print(f'\r\n\r\nKnown characters: {statistics["known"]}/{statistics["chars"]} ({statistics["known_percent"]}%)')
+        print(f'Unknown characters: {statistics["unknown"]}/{statistics["chars"]} ({statistics["unknown_percent"]}%)')
+        print(
+            f'Known unique characters: {statistics["known_unique"]}'
+            f'/{statistics["chars_unique"]}'
+            f' ({statistics["known_unique_percent"]}%)'
+        )
+        print(
+            f'Unknown unique characters: {statistics["unknown_unique"]}'
+            f'/{statistics["chars_unique"]}'
+            f' ({statistics["unknown_unique_percent"]}%)\r\n'
+        )
 
 
 @click.command()
 @click.option('--min', type=click.INT, default=0)
 @click.option('--max', type=click.INT, default=9999)
 @click.option('-s', '--sort', type=click.Choice(['frame', 'frequency']), default='frame')
-@click.option('-c', '--frequencies-corpus', type=click.Choice(['renminwang', 'subtlexch']), default='subtlexch', help='Frequencies data corpus.')
+@click.option(
+    '-c',
+    '--frequencies-corpus',
+    type=click.Choice(['renminwang', 'subtlexch']),
+    default='subtlexch',
+    help='Frequencies data corpus.',
+)
 @click.option('-r', '--reverse', required=False, is_flag=True, default=False, help='Reverse sorting order.')
-@click.option('-f', '--format', required=False, type=click.Choice(['csv', 'json', 'tabulate']), default='tabulate', help='Output format (default csv).')
+@click.option(
+    '-f',
+    '--format',
+    required=False,
+    type=click.Choice(['csv', 'json', 'tabulate']),
+    default='tabulate',
+    help='Output format (default csv).',
+)
 @click.option('-m', '--max-results', required=False, type=click.INT, default=-1, help='Show max n results.')
 def list(min, max, sort, frequencies_corpus, reverse, format, max_results):
     """
     Prints Heisig frames data.
     """
     hsg = Heisig(frequencies_corpus)
-    frames = [frame for idx, frame in enumerate(hsg.heisig.values()) if idx+1 >= min and idx+1 <= max]
+    frames = [frame for idx, frame in enumerate(hsg.heisig.values()) if idx + 1 >= min and idx + 1 <= max]
     if sort == 'frame' and reverse:
         frames.reverse()
     if sort == 'frequency':

@@ -24,6 +24,6 @@ def get_input(text, file):
         if clipboard is None:
             raise click.UsageError(
                 "no text argument or stdin provided and the 'clipboard' "
-                "extra is not installed; install with `pip install hsg[clipboard]`"
+                'extra is not installed; install with `pip install hsg[clipboard]`'
             )
         return clipboard.paste()

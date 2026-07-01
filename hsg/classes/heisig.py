@@ -1,21 +1,19 @@
-import sys
 import csv
 import json
+import sys
 
 from tabulate import tabulate
-from typing import Union
 
 from hsg.classes.renminwang import RenMinWang
 from hsg.classes.subtlexch import SubtlexCh
-from hsg.utils.constants import HEISIG_CSV, ADDITIONAL_CHARACTERS
+from hsg.utils.constants import ADDITIONAL_CHARACTERS, HEISIG_CSV
 
 
 class Heisig:
-
-    def __init__(self, frequencies_corpus: str, maxframe: int=-1):
+    def __init__(self, frequencies_corpus: str, maxframe: int = -1):
         self.maxframe = maxframe
         self.frequencies = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
-        self.heisig: dict[str, Union[str, int]] = {}
+        self.heisig: dict[str, str | int] = {}
         self.load_heisig()
         self.known_characters = self.get_known_characters()
 
@@ -24,7 +22,7 @@ class Heisig:
 
     def load_heisig(self):
         with open(HEISIG_CSV) as f:
-            reader = csv.reader(f, delimiter="\t")
+            reader = csv.reader(f, delimiter='\t')
             for row in reader:
                 frame = row[2]
                 if frame.startswith('v') or not frame:
@@ -48,7 +46,7 @@ class Heisig:
         return [hanzi for hanzi in self.heisig if self.heisig[hanzi]['frame'] <= self.maxframe]
 
     def get_known_characters(self):
-        return self.get_known_frames() + [char for char in ADDITIONAL_CHARACTERS]
+        return self.get_known_frames() + list(ADDITIONAL_CHARACTERS)
 
     def is_known(self, char):
         return char in self.known_characters
@@ -66,11 +64,16 @@ class Heisig:
         total_known = len([c for c in chars if self.is_known(c)])
         total_known_unique = len([c for c in unique_chars if self.is_known(c)])
         total_known_percent = round(total_known / total_chars * 100, 2) if total_chars > 0 else 0
-        total_known_unique_percent = round(total_known_unique / total_chars_unique * 100, 2) if total_chars_unique > 0 else 0
+        total_known_unique_percent = (
+            round(total_known_unique / total_chars_unique * 100, 2) if total_chars_unique > 0 else 0
+        )
         frequencies = {}
         for c in chars:
-            if not c in frequencies:
-                frequencies[c] = {'occurrencies': 1, 'percent': None, }
+            if c not in frequencies:
+                frequencies[c] = {
+                    'occurrencies': 1,
+                    'percent': None,
+                }
             else:
                 frequencies[c]['occurrencies'] += 1
         for c in frequencies:

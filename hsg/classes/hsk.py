@@ -2,14 +2,12 @@
 # old https://github.com/gigacool/hanyu-shuiping-kaoshi/blob/master/hsk.csv
 
 import csv
-from typing import Optional, Union, Any
-
 from collections import OrderedDict
-from hsg.utils.constants import HSK_OLD_CSV, HSK_NEW_CSV, ADDITIONAL_CHARACTERS
+
+from hsg.utils.constants import ADDITIONAL_CHARACTERS, HSK_NEW_CSV, HSK_OLD_CSV
 
 
 class HSK:
-
     def __init__(self) -> None:
         self.hsk_old: OrderedDict = OrderedDict()
         self.hsk_new: OrderedDict = OrderedDict()
@@ -19,7 +17,7 @@ class HSK:
         self.load_new_hsk(HSK_NEW_CSV)
 
     def load_old_hsk(self, oldhskcsv: str) -> None:
-        with open(oldhskcsv, 'r') as f:
+        with open(oldhskcsv) as f:
             reader = csv.reader(f, delimiter='\t')
             next(reader)
             for row in reader:
@@ -29,14 +27,14 @@ class HSK:
                     'num': int(num),
                     'simplified': simplified,
                     'pinyin': pinyin,
-                    'translations': translations.replace(',', ';')
+                    'translations': translations.replace(',', ';'),
                 }
                 for c in simplified:
                     if c not in ADDITIONAL_CHARACTERS and c not in self.hsk_old_chars:
                         self.hsk_old_chars[c] = level
 
     def load_new_hsk(self, newhskcsv: str) -> None:
-        with open(newhskcsv, 'r') as f:
+        with open(newhskcsv) as f:
             reader = csv.reader(f, delimiter=',')
             next(reader)
             for row in reader:
@@ -56,44 +54,44 @@ class HSK:
                     if c not in ADDITIONAL_CHARACTERS and c not in self.hsk_new_chars:
                         self.hsk_new_chars[c] = level
 
-    def get_hsk_old_word(self, char: str) -> Optional[dict]:
+    def get_hsk_old_word(self, char: str) -> dict | None:
         return self.hsk_old.get(char)
 
-    def get_hsk_new_word(self, char: str) -> Optional[dict]:
+    def get_hsk_new_word(self, char: str) -> dict | None:
         return self.hsk_new.get(char)
-    
-    def get_hsk_old_words(self, level: Optional[Union[str, int]]) -> list[dict[str, Union[str, int]]]:
+
+    def get_hsk_old_words(self, level: str | int | None) -> list[dict[str, str | int]]:
         if level:
             return [w for w in self.hsk_old.values() if w['level'] == str(level)]
         return list(self.hsk_old.values())
 
-    def get_hsk_new_words(self, level: Optional[Union[str, int]]) -> list[dict[str, Union[str, int]]]:
+    def get_hsk_new_words(self, level: str | int | None) -> list[dict[str, str | int]]:
         if level:
             return [w for w in self.hsk_new.values() if w['level'] == str(level)]
         return list(self.hsk_new.values())
-    
-    def get_hsk_old_word_level(self, word: str) -> Optional[str]:
+
+    def get_hsk_old_word_level(self, word: str) -> str | None:
         if word in self.hsk_old:
             return self.hsk_old[word]['level']
         return None
 
-    def get_hsk_new_word_level(self, word: str) -> Optional[str]:
+    def get_hsk_new_word_level(self, word: str) -> str | None:
         if word in self.hsk_new:
             return self.hsk_new[word]['level']
         return None
 
-    def get_hsk_old_char_level(self, char: str) -> Optional[str]:
+    def get_hsk_old_char_level(self, char: str) -> str | None:
         return self.hsk_old_chars.get(char)
 
-    def get_hsk_new_char_level(self, char: str) -> Optional[str]:
+    def get_hsk_new_char_level(self, char: str) -> str | None:
         return self.hsk_new_chars.get(char)
 
-    def get_hsk_old_chars(self, level: Optional[Union[str, int]] = None) -> Optional[list[str]]:
+    def get_hsk_old_chars(self, level: str | int | None = None) -> list[str] | None:
         if level:
             return [c for c in self.hsk_old_chars if self.hsk_old_chars[c] == str(level)]
         return list(self.hsk_old_chars.keys())
 
-    def get_hsk_new_chars(self, level: Optional[Union[str, int]] = None) -> Optional[list[str]]:
+    def get_hsk_new_chars(self, level: str | int | None = None) -> list[str] | None:
         if level:
             return [c for c in self.hsk_new_chars if self.hsk_new_chars[c] == str(level)]
         return list(self.hsk_new_chars.keys())

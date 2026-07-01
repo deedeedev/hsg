@@ -1,6 +1,5 @@
 import os
 
-
 # paths
 UTILS_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 ASSETS_DIR_PATH = os.path.join(os.path.dirname(os.path.dirname(UTILS_DIR_PATH)), 'assets')
@@ -22,4 +21,11 @@ SUBTLEX_CH_WORDS_CSV = os.path.join(ASSETS_DIR_PATH, 'subtlex-ch/SUBTLEX-CH-WF.c
 SUBTLEX_CH_WORDS_POS_COMBINED_CSV = os.path.join(ASSETS_DIR_PATH, 'subtlex-ch/SUBTLEX_CH_131210_CE.utf8')
 
 # misc
-ADDITIONAL_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzàáèéìíòóùú1234567890 !?#%()[]-_,;:.=\'"“”…‘’１６８！。？，、；：％（）《》〈〉【】〖〗〔〕「」『』—·℃'
+ADDITIONAL_CHARACTERS = (
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    'abcdefghijklmnopqrstuvwxyz'
+    'àáèéìíòóùú'
+    '1234567890'
+    ' !?#%()[]-_,;:.=\'"“”…‘’'
+    '１６８！。？，、；：％（）《》〈〉【】〖〗〔〕「」『』—·℃'
+)

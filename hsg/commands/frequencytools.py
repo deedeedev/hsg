@@ -5,9 +5,9 @@ import click
 import clipboard
 
 from tabulate import tabulate
-from classes.heisig import Heisig
-from classes.renminwang import RenMinWang
-from classes.subtlexch import SubtlexCh
+from hsg.classes.heisig import Heisig
+from hsg.classes.renminwang import RenMinWang
+from hsg.classes.subtlexch import SubtlexCh
 
 
 @click.command()

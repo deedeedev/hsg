@@ -5,9 +5,9 @@ import json
 from tabulate import tabulate
 from typing import Union
 
-from classes.renminwang import RenMinWang
-from classes.subtlexch import SubtlexCh
-from utils.constants import HEISIG_CSV, ADDITIONAL_CHARACTERS
+from hsg.classes.renminwang import RenMinWang
+from hsg.classes.subtlexch import SubtlexCh
+from hsg.utils.constants import HEISIG_CSV, ADDITIONAL_CHARACTERS
 
 
 class Heisig:

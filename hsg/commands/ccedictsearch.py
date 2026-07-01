@@ -1,7 +1,7 @@
 import click
 
-from classes.ccedict import Ccedict
-from utils.constants import CCEDICT_CSV
+from hsg.classes.ccedict import Ccedict
+from hsg.utils.constants import CCEDICT_CSV
 
 
 @click.command()

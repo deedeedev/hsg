@@ -8,7 +8,7 @@ from typing import Union
 from rich import print
 from tabulate import tabulate
 from pypinyin import pinyin, lazy_pinyin, Style
-from utils.constants import ADDITIONAL_CHARACTERS, HEISIG_CSV, TATOEBA_CSV
+from hsg.utils.constants import ADDITIONAL_CHARACTERS, HEISIG_CSV, TATOEBA_CSV
 
 # TODO utilizzare click per l'output colorato al posto di rich (https://click.palletsprojects.com/en/8.0.x/utils/#ansi-colors)
 

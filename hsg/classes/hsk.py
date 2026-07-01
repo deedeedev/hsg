@@ -5,7 +5,7 @@ import csv
 from typing import Optional, Union, Any
 
 from collections import OrderedDict
-from utils.constants import HSK_OLD_CSV, HSK_NEW_CSV, ADDITIONAL_CHARACTERS
+from hsg.utils.constants import HSK_OLD_CSV, HSK_NEW_CSV, ADDITIONAL_CHARACTERS
 
 
 class HSK:

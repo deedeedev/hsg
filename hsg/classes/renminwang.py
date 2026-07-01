@@ -3,8 +3,8 @@ import csv
 from operator import xor
 from typing import Any, Optional
 
-from classes.frequency import Frequency
-from utils.constants import RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV, HEISIG_CSV
+from hsg.classes.frequency import Frequency
+from hsg.utils.constants import RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV, HEISIG_CSV
 
 
 class RenMinWang(Frequency):

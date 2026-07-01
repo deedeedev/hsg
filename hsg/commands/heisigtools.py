@@ -9,9 +9,9 @@ import clipboard
 from rich import print
 from pypinyin import pinyin, lazy_pinyin, Style
 
-from classes.heisig import Heisig
-from classes.hsk import HSK
-from utils.writers import WRITERS, validate_fields
+from hsg.classes.heisig import Heisig
+from hsg.classes.hsk import HSK
+from hsg.utils.writers import WRITERS, validate_fields
 
 # TODO gestire i file csv con database SQLite e sqlalchemy
 # TODO consolidare le interfacce cli in un unico comando, es: hsg cc, hsg freq, hsg tatoeba, hsg parse ecc.

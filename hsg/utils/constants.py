@@ -3,7 +3,7 @@ import os
 
 # paths
 UTILS_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
-ASSETS_DIR_PATH = os.path.join(os.path.dirname(UTILS_DIR_PATH), 'assets')
+ASSETS_DIR_PATH = os.path.join(os.path.dirname(os.path.dirname(UTILS_DIR_PATH)), 'assets')
 
 # characters, words, sentences
 HEISIG_CSV = os.path.join(ASSETS_DIR_PATH, 'heisig.tsv')

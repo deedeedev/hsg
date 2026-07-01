@@ -3,8 +3,8 @@ import csv
 from operator import xor
 from typing import Any, Optional
 
-from classes.frequency import Frequency
-from utils.constants import SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV, SUBTLEX_CH_WORDS_POS_COMBINED_CSV, HEISIG_CSV
+from hsg.classes.frequency import Frequency
+from hsg.utils.constants import SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV, SUBTLEX_CH_WORDS_POS_COMBINED_CSV, HEISIG_CSV
 
 
 class SubtlexCh(Frequency):

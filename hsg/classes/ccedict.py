@@ -1,4 +1,4 @@
-from classes.subtlexch import SubtlexCh
+from hsg.classes.subtlexch import SubtlexCh
 import sys
 import csv
 import json
@@ -6,11 +6,11 @@ import re
 import pickle
 import os
 
-from classes.renminwang import RenMinWang
-from classes.hsk import HSK
+from hsg.classes.renminwang import RenMinWang
+from hsg.classes.hsk import HSK
 from rich import print
 from tabulate import tabulate
-from utils.constants import ADDITIONAL_CHARACTERS, ASSETS_DIR_PATH
+from hsg.utils.constants import ADDITIONAL_CHARACTERS, ASSETS_DIR_PATH
 
 from enum import Enum
 from typing import List, Union

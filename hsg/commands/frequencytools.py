@@ -2,7 +2,10 @@ import sys
 import csv
 import json
 import click
-import clipboard
+try:
+    import clipboard
+except ImportError:
+    clipboard = None
 
 from tabulate import tabulate
 from hsg.classes.heisig import Heisig
@@ -57,6 +60,11 @@ def get_input(text, file):
             return file.read()
     else:
         # 2nd fallback: clipboard
+        if clipboard is None:
+            raise click.UsageError(
+                "no text argument or stdin provided and the 'clipboard' "
+                "extra is not installed; install with `pip install hsg[clipboard]`"
+            )
         return clipboard.paste()
 
 

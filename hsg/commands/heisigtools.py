@@ -5,7 +5,10 @@ from io import StringIO
 from html.parser import HTMLParser
 
 import click
-import clipboard
+try:
+    import clipboard
+except ImportError:
+    clipboard = None
 from rich import print
 from pypinyin import pinyin, lazy_pinyin, Style
 
@@ -271,6 +274,11 @@ def get_input(text, file):
             return file.read()
     else:
         # 2nd fallback: clipboard
+        if clipboard is None:
+            raise click.UsageError(
+                "no text argument or stdin provided and the 'clipboard' "
+                "extra is not installed; install with `pip install hsg[clipboard]`"
+            )
         return clipboard.paste()
 
 

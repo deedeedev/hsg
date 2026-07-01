@@ -80,10 +80,10 @@ class SubtlexCh(Frequency):
             dict[l['lemma']] = l
         return dict
 
-    def find_char(self, char: str) -> Optional[list[Any]]:
+    def find_char(self, char: str) -> dict[str, Any] | None:
         return self.chars.get(char)
 
-    def find_word(self, word: str) -> Optional[list[Any]]:
+    def find_word(self, word: str) -> dict[str, Any] | None:
         return self.words.get(word)
 
     def find_pos(self, word: str) -> Optional[tuple[str, dict[str, int]]]:

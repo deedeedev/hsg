@@ -1,5 +1,6 @@
 __pychache__
 .venv
 hsg.egg-info
+build/
 
 *.pickle

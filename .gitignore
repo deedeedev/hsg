@@ -4,3 +4,4 @@ hsg.egg-info
 build/
 
 *.pickle.coverage
+site/

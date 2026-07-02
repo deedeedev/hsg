@@ -42,6 +42,11 @@ Changelog = "https://github.com/davide/hsg/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 clipboard = ["clipboard>=0.0.4"]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.26",
+]
 dev = [
     "mypy>=1.0",
     "ruff>=0.6",

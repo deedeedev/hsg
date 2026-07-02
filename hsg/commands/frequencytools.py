@@ -8,6 +8,7 @@ from rich import print
 from tabulate import tabulate
 
 from hsg.classes.frequency import Frequency
+from hsg.classes.knownset_factory import create_known_set
 from hsg.classes.renminwang import RenMinWang
 from hsg.classes.subtlexch import SubtlexCh
 from hsg.utils.io import get_input
@@ -20,8 +21,27 @@ from hsg.utils.io import get_input
 @click.option(
     '-m', '--max-results', required=False, type=click.INT, default=-1, help='Show max n results (default all).'
 )
-@click.option('-h', '--skip-heisig', required=False, is_flag=True, default=False, help='Skip Heisig characters.')
-@click.option('-o', '--only-heisig', required=False, is_flag=True, default=False, help='Show only Heisig characters.')
+@click.option('--skip-known', is_flag=True, default=False, help='Skip known characters.')
+@click.option('--only-known', is_flag=True, default=False, help='Show only known characters.')
+@click.option(
+    '--known-set',
+    type=click.Choice(['heisig', 'hsk', 'file']),
+    default='heisig',
+    help='Known-character source (default: heisig).',
+)
+@click.option(
+    '--known-file',
+    type=click.Path(exists=True),
+    default=None,
+    help='Path to known-characters file (for --known-set file).',
+)
+@click.option(
+    '--max',
+    'max_known',
+    type=click.INT,
+    default=-1,
+    help='Max frame/level for known-set.',
+)
 @click.option(
     '-p',
     '--type',
@@ -60,8 +80,11 @@ def search(
     file: Any,
     skip_clipboard: bool,
     max_results: int,
-    skip_heisig: bool,
-    only_heisig: bool,
+    skip_known: bool,
+    only_known: bool,
+    known_set: str,
+    known_file: str | None,
+    max_known: int,
     type: str,
     min_length: int,
     sort: str,
@@ -70,7 +93,30 @@ def search(
     format: str,
 ) -> None:
     fq: Frequency = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
-    lemmas = fq.get_most_frequent_lemmas(type, max_results, skip_heisig, only_heisig, min_length, sort, reverse)
+
+    if skip_known or only_known:
+        if known_set == 'file':
+            if not known_file:
+                raise click.UsageError('--known-set file requires --known-file')
+            ks = create_known_set('file', filepath=known_file)
+        else:
+            ks = create_known_set(known_set, max=max_known)
+        known_chars: set[str] | None = set(ks.get_known_characters())
+    else:
+        known_chars = None
+
+    skip_chars = known_chars if skip_known else None
+    only_chars = known_chars if only_known else None
+
+    lemmas = fq.get_most_frequent_lemmas(
+        type,
+        max_results,
+        skip_known=skip_chars,
+        only_known=only_chars,
+        min_length=min_length,
+        sort=sort,
+        reverse=reverse,
+    )
 
     # filter results by text input
     input_text = get_input(text, file)

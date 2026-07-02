@@ -16,8 +16,8 @@ class TestFreq:
         data = json.loads(result.output.strip())
         assert len(data) <= 2
 
-    def test_freq_only_heisig(self, patched_constants, runner: CliRunner, app):
-        result = runner.invoke(app, ['freq', '一二三四五六七八九十', '-o', '-t', 'json', '-k'])
+    def test_freq_only_known(self, patched_constants, runner: CliRunner, app):
+        result = runner.invoke(app, ['freq', '一二三四五六七八九十', '--only-known', '-t', 'json', '-k'])
         assert result.exit_code == 0
         data = json.loads(result.output.strip())
         for lemma in data:

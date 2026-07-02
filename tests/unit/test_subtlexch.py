@@ -27,11 +27,12 @@ class TestSubtlexCh:
         assert lemmas[1]['rank'] == 2
         assert lemmas[2]['rank'] == 3
 
-    def test_get_most_frequent_lemmas_only_heisig(self, patched_constants):
+    def test_get_most_frequent_lemmas_only_known(self, patched_constants):
         s = SubtlexCh()
-        lemmas = s.get_most_frequent_lemmas(only_heisig=True)
+        known = set('一二三四五六七八九十')
+        lemmas = s.get_most_frequent_lemmas(only_known=known)
         for lemma in lemmas:
-            assert lemma['lemma'] in '一二三四五六七八九十'
+            assert lemma['lemma'] in known
 
     def test_get_most_frequent_lemmas_sorted_by_count(self, patched_constants):
         s = SubtlexCh()

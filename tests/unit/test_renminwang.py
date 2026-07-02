@@ -24,8 +24,9 @@ class TestRenMinWang:
         assert len(lemmas) == 3
         assert lemmas[0]['rank'] == 1
 
-    def test_get_most_frequent_lemmas_only_heisig(self, patched_constants):
+    def test_get_most_frequent_lemmas_only_known(self, patched_constants):
         r = RenMinWang()
-        lemmas = r.get_most_frequent_lemmas(only_heisig=True)
+        known = set('一二三四五六七八九十')
+        lemmas = r.get_most_frequent_lemmas(only_known=known)
         for lemma in lemmas:
-            assert lemma['lemma'] in '一二三四五六七八九十'
+            assert lemma['lemma'] in known

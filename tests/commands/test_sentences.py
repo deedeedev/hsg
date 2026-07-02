@@ -29,3 +29,15 @@ class TestSentences:
         assert result.exit_code == 0
         data = json.loads(result.output.strip(), strict=False)
         assert len(data) > 0
+
+    def test_sentences_known_set_file(self, patched_constants, runner: CliRunner, app, tmp_path):
+        known_file = tmp_path / 'known.txt'
+        known_file.write_text('一\n二\n三\n')
+        result = runner.invoke(
+            app,
+            ['sentences', '一', '--known-set', 'file', '--known-file', str(known_file), '-f', 'json'],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output.strip(), strict=False)
+        for s in data:
+            assert all(c in '一二三' or c in '!?,. ' for c in s['hanzi'])

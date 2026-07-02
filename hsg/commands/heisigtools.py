@@ -278,12 +278,48 @@ def parse(
 @click.argument('text', required=False)
 @click.option('-f', '--file', required=False, type=click.File('r'), default=sys.stdin)
 @click.option('-m', '--max-frame', type=click.INT, default=-1)
+@click.option(
+    '--known-set',
+    type=click.Choice(['heisig', 'hsk', 'file']),
+    default=None,
+    help='Known-character source (default: heisig).',
+)
+@click.option(
+    '--known-file',
+    type=click.Path(exists=True),
+    default=None,
+    help='Path to known-characters file (for --known-set file).',
+)
+@click.option(
+    '--max',
+    'max_known',
+    type=click.INT,
+    default=None,
+    help='Max frame/level for known-set (overrides --max-frame).',
+)
 @click.option('-v', '--verbose', required=False, is_flag=True)
-def enrich(text: str | None, file: Any, max_frame: int, verbose: bool) -> None:
+def enrich(
+    text: str | None,
+    file: Any,
+    max_frame: int,
+    known_set: str | None,
+    known_file: str | None,
+    max_known: int | None,
+    verbose: bool,
+) -> None:
     """Parses a text and highlights unknown Heisig frames (blue) and non-Heisig characters (red).
 
     If no text is passed as argument fallbacks to stdin then clipboard"""
-    hsg = Heisig('subtlexch', max_frame)
+    ks_backend = known_set or 'heisig'
+    ks_max = max_known if max_known is not None else max_frame
+
+    if ks_backend == 'file':
+        if not known_file:
+            raise click.UsageError('--known-set file requires --known-file')
+        hsg = create_known_set('file', filepath=known_file)
+    else:
+        hsg = create_known_set(ks_backend, max=ks_max, frequencies_corpus='subtlexch')
+
     input_text = get_input(text, file)
     chars = list(input_text.strip())
     statistics = hsg.get_statistics(chars)
@@ -291,7 +327,7 @@ def enrich(text: str | None, file: Any, max_frame: int, verbose: bool) -> None:
     # output data
     for char in chars:
         if not hsg.is_known(char):
-            if char in hsg.heisig:
+            if isinstance(hsg, Heisig) and char in hsg.heisig:
                 print(f'[bold blue]{char}[/bold blue]', end='')
             else:
                 print(f'[bold red]{char}[/bold red]', end='')

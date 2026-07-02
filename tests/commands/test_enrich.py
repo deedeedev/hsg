@@ -18,3 +18,9 @@ class TestEnrich:
         result = runner.invoke(app, ['enrich', '一二三', '-m', '5', '-v'])
         assert result.exit_code == 0
         assert 'Known characters:' in result.output
+
+    def test_enrich_known_set_hsk(self, patched_constants, runner: CliRunner, app):
+        result = runner.invoke(app, ['enrich', '一二四', '--known-set', 'hsk', '--max', '1'])
+        assert result.exit_code == 0
+        assert '一' in result.output
+        assert '四' in result.output

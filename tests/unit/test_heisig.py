@@ -43,3 +43,10 @@ class TestHeisig:
     def test_load_heisig_skips_variant_rows(self, patched_constants):
         h = Heisig('subtlexch', -1)
         assert len(h.heisig) == 10  # 10 real frames, no variant rows
+
+
+def test_heisig_is_knownset(patched_constants):
+    from hsg.classes.knownset import KnownSet
+
+    h = Heisig('subtlexch', 5)
+    assert isinstance(h, KnownSet)

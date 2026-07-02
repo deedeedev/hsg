@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 import logging
 import sys
-from html.parser import HTMLParser
-from io import StringIO
 from typing import Any, cast
 
 import click
@@ -24,9 +22,40 @@ logger = logging.getLogger(__name__)
 @click.command()
 @click.argument('text', required=False)
 @click.option('-f', '--file', type=click.File('r'), default=sys.stdin)
-def stories(text: str | None, file: Any) -> None:
-    """Parses a text and returns a list of Heisig stories.
-    If no text is passed as argument fallbacks to stdin then clipboard"""
+@click.option(
+    '--stories-file',
+    type=click.Path(exists=True),
+    default=None,
+    help='Path to stories JSON file (use `hsg stories-import` to create one).',
+)
+def stories(text: str | None, file: Any, stories_file: str | None) -> None:
+    """Parses a text and returns Heisig stories from a JSON file."""
+    from hsg.classes.stories import StoryStore
+
+    if not stories_file:
+        raise click.UsageError('--stories-file is required (use `hsg stories-import` to create one)')
+
+    store = StoryStore(stories_file)
+    input_text = get_input(text, file)
+    chars = list(input_text.replace('\r', '').replace('\n', '').strip())
+    for idx, char in enumerate(chars):
+        data = store.get_story(char)
+        if not data:
+            print(f'{char}: NO STORY')
+        else:
+            print(f'{char} ({data.get("keyword", "")} | {data.get("keyword_ita", "")}): {data.get("story", "")}')
+        if idx < len(chars) - 1:
+            print()
+
+
+@click.command(name='stories-import')
+@click.argument('text', required=False)
+@click.option('-f', '--file', type=click.File('r'), default=sys.stdin)
+@click.option('--out', type=click.Path(), default='stories.json', help='Output JSON file (default: stories.json).')
+@click.option('--deck', default='Cinese::Heisig', help='Anki deck name.')
+def stories_import(text: str | None, file: Any, out: str, deck: str) -> None:
+    """Imports stories from AnkiConnect into a JSON file."""
+    from hsg.classes.stories import _strip_tags
 
     def find_notes(hanzi: str) -> list[int]:
         url = 'http://localhost:8765'
@@ -34,7 +63,7 @@ def stories(text: str | None, file: Any) -> None:
             'action': 'findNotes',
             'version': 6,
             'params': {
-                'query': f'deck:Cinese::Heisig Hanzi:{hanzi}',
+                'query': f'deck:{deck} Hanzi:{hanzi}',
             },
         }
         try:
@@ -74,39 +103,24 @@ def stories(text: str | None, file: Any) -> None:
                     'keyword_ita': note['fields']['KeywordIta']['value'],
                     'primitive': note['fields']['PrimitiveMeaning']['value'],
                     'primitive_ita': note['fields']['PrimitiveMeaningIta']['value'],
-                    'story': note['fields']['Story']['value'],
+                    'story': _strip_tags(note['fields']['Story']['value']),
                 }
         return None
 
-    class MLStripper(HTMLParser):
-        def __init__(self) -> None:
-            super().__init__()
-            self.reset()
-            self.strict = False
-            self.convert_charrefs = True
-            self.text = StringIO()
-
-        def handle_data(self, d: str) -> None:
-            self.text.write(d)
-
-        def get_data(self) -> str:
-            return self.text.getvalue()
-
-    def strip_tags(html: str) -> str:
-        s = MLStripper()
-        s.feed(html)
-        return s.get_data()
-
     input_text = get_input(text, file)
     chars = list(input_text.replace('\r', '').replace('\n', '').strip())
-    for idx, char in enumerate(chars):
+    stories_data: dict[str, dict[str, str]] = {}
+    for char in chars:
         data = get_data(char)
-        if not data:
-            print(f'{char}: NO HEISIG')
+        if data:
+            stories_data[char] = data
+            print(f'{char} ({data["keyword"]}): imported')
         else:
-            print(f'{char} ({data["keyword"]} | {data["keyword_ita"]}): {strip_tags(data["story"])}')
-        if idx < len(chars) - 1:
-            print()
+            print(f'{char}: NO HEISIG')
+
+    with open(out, 'w') as f:
+        json.dump(stories_data, f, ensure_ascii=False, indent=2)
+    print(f'\nWrote {len(stories_data)} stories to {out}')
 
 
 @click.command()

@@ -8,9 +8,8 @@ from rich import print
 from tabulate import tabulate
 
 from hsg.classes.frequency import Frequency
+from hsg.classes.frequency_factory import create_frequency
 from hsg.classes.knownset_factory import create_known_set
-from hsg.classes.renminwang import RenMinWang
-from hsg.classes.subtlexch import SubtlexCh
 from hsg.utils.io import get_input
 
 
@@ -92,7 +91,7 @@ def search(
     frequencies_corpus: str,
     format: str,
 ) -> None:
-    fq: Frequency = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
+    fq: Frequency = create_frequency(frequencies_corpus)
 
     if skip_known or only_known:
         if known_set == 'file':

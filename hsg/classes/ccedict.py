@@ -12,9 +12,8 @@ from rich import print
 from tabulate import tabulate
 
 from hsg.classes.frequency import Frequency
+from hsg.classes.frequency_factory import create_frequency
 from hsg.classes.hsk import HSK
-from hsg.classes.renminwang import RenMinWang
-from hsg.classes.subtlexch import SubtlexCh
 from hsg.utils.constants import ADDITIONAL_CHARACTERS, ASSETS_DIR_PATH
 
 logger = logging.getLogger(__name__)
@@ -30,7 +29,7 @@ class Ccedict:
     def __init__(self, cedictfile: str, frequencies_corpus: str) -> None:
         self.cedictfile: str = cedictfile
         self.dictionary: list[dict[str, Any]] = []
-        self.fq: Frequency = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
+        self.fq: Frequency = create_frequency(frequencies_corpus)
         self.hsk: HSK = HSK()
         self.dict_lines: list[str] = []
         self.load_dict()

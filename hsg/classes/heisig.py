@@ -6,16 +6,15 @@ from typing import Any
 from tabulate import tabulate
 
 from hsg.classes.frequency import Frequency
+from hsg.classes.frequency_factory import create_frequency
 from hsg.classes.knownset import KnownSet
-from hsg.classes.renminwang import RenMinWang
-from hsg.classes.subtlexch import SubtlexCh
 from hsg.utils.constants import ADDITIONAL_CHARACTERS, HEISIG_CSV
 
 
 class Heisig(KnownSet):
     def __init__(self, frequencies_corpus: str, maxframe: int = -1) -> None:
         self.maxframe = maxframe
-        self.frequencies: Frequency = {'renminwang': RenMinWang, 'subtlexch': SubtlexCh}[frequencies_corpus]()
+        self.frequencies: Frequency = create_frequency(frequencies_corpus)
         self.heisig: dict[str, dict[str, Any]] = {}
         self.load_heisig()
         self.known_characters: list[str] = self.get_known_characters()

@@ -1,0 +1,41 @@
+name: Corpus request
+description: Request adding a new data source (dictionary, frequency list, sentence corpus)
+labels: ["corpus", "enhancement"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Corpus name
+      placeholder: "e.g. Daqian corpus"
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Download URL or source
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: Licence
+      placeholder: "e.g. CC-BY 4.0, public domain"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What does this corpus contain and why is it useful?
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Corpus type
+      options:
+        - Frequency list (characters/words)
+        - Sentence corpus
+        - Dictionary
+        - Known-set source (HSK-like levels, etc.)
+    validations:
+      required: true

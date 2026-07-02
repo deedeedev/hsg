@@ -150,20 +150,17 @@ def patched_constants(monkeypatch: pytest.MonkeyPatch, assets_dir: Path) -> Path
         'hsg.classes.hsk.HSK_NEW_CSV': os.path.join(ad, 'hsk_new.csv'),
         'hsg.classes.hsk.HSK_OLD_CSV': os.path.join(ad, 'hsk_old.csv'),
         # hsg.classes.subtlexch
-        'hsg.classes.subtlexch.HEISIG_CSV': os.path.join(ad, 'heisig.tsv'),
         'hsg.classes.subtlexch.SUBTLEX_CH_CHARS_CSV': os.path.join(ad, 'subtlex-ch', 'SUBTLEX-CH-CHR.csv'),
         'hsg.classes.subtlexch.SUBTLEX_CH_WORDS_CSV': os.path.join(ad, 'subtlex-ch', 'SUBTLEX-CH-WF.csv'),
         'hsg.classes.subtlexch.SUBTLEX_CH_WORDS_POS_COMBINED_CSV': os.path.join(
             ad, 'subtlex-ch', 'SUBTLEX_CH_131210_CE.utf8'
         ),
         # hsg.classes.renminwang
-        'hsg.classes.renminwang.HEISIG_CSV': os.path.join(ad, 'heisig.tsv'),
         'hsg.classes.renminwang.RMW_FREQUENCIES_CHARS_CSV': os.path.join(ad, 'renminwang', 'RENMINWANG-CHR'),
         'hsg.classes.renminwang.RMW_FREQUENCIES_WORDS_CSV': os.path.join(ad, 'renminwang', 'RENMINWANG-WF'),
         # hsg.classes.ccedict (ASSETS_DIR_PATH used for pickle path)
         'hsg.classes.ccedict.ASSETS_DIR_PATH': ad,
         # hsg.commands.heisigtatoeba
-        'hsg.commands.heisigtatoeba.HEISIG_CSV': os.path.join(ad, 'heisig.tsv'),
         'hsg.commands.heisigtatoeba.TATOEBA_CSV': os.path.join(ad, 'tatoeba.tsv'),
         # hsg.commands.ccedictsearch
         'hsg.commands.ccedictsearch.CCEDICT_CSV': os.path.join(ad, 'cedict_ts.u8'),

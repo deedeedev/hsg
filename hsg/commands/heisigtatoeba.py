@@ -1,6 +1,5 @@
 import csv
 import json
-import random
 import sys
 
 import click
@@ -8,90 +7,47 @@ from pypinyin import pinyin
 from rich import print
 from tabulate import tabulate
 
-from hsg.utils.constants import ADDITIONAL_CHARACTERS, HEISIG_CSV, TATOEBA_CSV
+from hsg.classes.knownset_factory import create_known_set
+from hsg.classes.tatoeba_corpus import TatoebaCorpus
+from hsg.utils.constants import TATOEBA_CSV
 
-Frame = dict[str, str]
 Sentence = dict[str, str | list[str]]
 
 
-class TatoebaHeisig:
-    def __init__(self, tatoebacsv: str, heisigcsv: str, maxframe: int) -> None:
-        self.tatoebacsv: str = tatoebacsv
-        self.heisigcsv: str = heisigcsv
-        self.maxframe: int = maxframe
-        self.tatoeba: dict[str, list[str]] = {}
-        self.heisig: dict[str, Frame] = {}
-        self.allowed_sentences: list[Sentence] = []
-
-    def load_tatoeba(self) -> None:
-        with open(self.tatoebacsv) as f:
-            reader = csv.reader(f, delimiter='\t')
-            for row in reader:
-                hanzi: str = row[1]
-                english: str = row[3]
-                if hanzi not in self.tatoeba:
-                    self.tatoeba[hanzi] = [english]
-                else:
-                    self.tatoeba[hanzi].append(english)
-
-    def load_heisig(self) -> None:
-        with open(self.heisigcsv) as f:
-            reader = csv.reader(f, delimiter='\t')
-            for row in reader:
-                frame_number: str = row[2]
-                if frame_number.startswith('v') or not frame_number:
-                    continue
-                hanzi: str = row[0]
-                keyword: str = row[4]
-                pinyin: str = row[5]
-                self.heisig[hanzi] = {
-                    'frame': frame_number,
-                    'keyword': keyword,
-                    'pinyin': pinyin,
-                }
-
-    def get_allowed_frames(self) -> list[str]:
-        if self.maxframe == -1:
-            return list(self.heisig.keys())
-        return [hanzi for hanzi in self.heisig if int(self.heisig[hanzi]['frame']) <= self.maxframe]
-
-    def get_allowed_characters(self) -> list[str]:
-        return self.get_allowed_frames() + list(ADDITIONAL_CHARACTERS)
-
-    def get_all_allowed_sentences(self) -> None:
-        self.load_tatoeba()
-        self.load_heisig()
-        allowed: list[str] = self.get_allowed_characters()
-        for sentence in self.tatoeba:
-            if self.maxframe == -1 or all(char in allowed for char in sentence):
-                self.allowed_sentences.append({'hanzi': sentence, 'translations': self.tatoeba[sentence]})
-
-    def find_sentences(self, keyword: str, max_sentences: int, reverse: bool) -> list[Sentence]:
-        if not self.allowed_sentences:
-            self.get_all_allowed_sentences()
-        sentences = [sentence for sentence in self.allowed_sentences if keyword in sentence['hanzi']]
-        return sorted(sentences, key=lambda x: len(x['hanzi']), reverse=reverse)[:max_sentences]
-
-    def find_random_sentences(self, number: int, minlength: int, reverse: bool) -> list[Sentence]:
-        if not self.allowed_sentences:
-            self.get_all_allowed_sentences()
-        minlength_sentences = [sentence for sentence in self.allowed_sentences if len(sentence['hanzi']) >= minlength]
-        minlength_sentences = random.sample(minlength_sentences, number)
-        return sorted(minlength_sentences, key=lambda x: len(x['hanzi']), reverse=reverse)
-
-    def print_sentences(self, sentences: list[Sentence], format: str) -> None:
+def print_sentences(sentences: list[Sentence], format: str) -> None:
+    for s in sentences:
+        s['pinyin'] = ' '.join([p[0] for p in pinyin(s['hanzi'])])
+    if format == 'csv':
+        writer = csv.writer(sys.stdout, delimiter='\t')
         for s in sentences:
-            s['pinyin'] = ' '.join([p[0] for p in pinyin(s['hanzi'])])
-        if format == 'csv':
-            writer = csv.writer(sys.stdout, delimiter='\t')
-            for s in sentences:
-                writer.writerow([s['hanzi'], s['pinyin'], ' / '.join(s['translations'])])
-        elif format == 'json':
-            print(json.dumps(sentences))
-        elif format == 'tabulate':
-            for s in sentences:
-                s['translations'] = ' / '.join(s['translations'])
-            print(tabulate(sentences, headers='keys', tablefmt='github'))
+            writer.writerow([s['hanzi'], s['pinyin'], ' / '.join(s['translations'])])
+    elif format == 'json':
+        print(json.dumps(sentences))
+    elif format == 'tabulate':
+        for s in sentences:
+            s['translations'] = ' / '.join(s['translations'])
+        print(tabulate(sentences, headers='keys', tablefmt='github'))
+
+
+def _resolve_known_chars(
+    all_characters: bool,
+    known_set: str | None,
+    known_file: str | None,
+    max_known: int | None,
+    max_frame: int,
+) -> set[str] | None:
+    """Resolve the known-chars set, or None for no filtering."""
+    if all_characters:
+        return None
+    ks_backend = known_set or 'heisig'
+    ks_max = max_known if max_known is not None else max_frame
+    if ks_backend == 'file':
+        if not known_file:
+            raise click.UsageError('--known-set file requires --known-file')
+        ks = create_known_set('file', filepath=known_file)
+    else:
+        ks = create_known_set(ks_backend, max=ks_max, frequencies_corpus='subtlexch')
+    return set(ks.get_known_characters())
 
 
 @click.command()
@@ -107,15 +63,41 @@ class TatoebaHeisig:
 @click.option(
     '-f', '--format', type=click.Choice(['csv', 'json', 'tabulate']), default='csv', help='Output format (default csv).'
 )
+@click.option(
+    '--known-set',
+    type=click.Choice(['heisig', 'hsk', 'file']),
+    default=None,
+    help='Known-character source (default: heisig).',
+)
+@click.option(
+    '--known-file',
+    type=click.Path(exists=True),
+    default=None,
+    help='Path to known-characters file (for --known-set file).',
+)
+@click.option(
+    '--max',
+    'max_known',
+    type=click.INT,
+    default=None,
+    help='Max frame/level for known-set (overrides --max-frame).',
+)
 def sentences(
-    keyword: str, max_frame: int, all_characters: bool, max_sentences: int, reverse: bool, format: str
+    keyword: str,
+    max_frame: int,
+    all_characters: bool,
+    max_sentences: int,
+    reverse: bool,
+    format: str,
+    known_set: str | None,
+    known_file: str | None,
+    max_known: int | None,
 ) -> None:
     """Returns all sentences from the Tatoeba corpus with the specified keyword"""
-    if all_characters:
-        max_frame = -1
-    ht = TatoebaHeisig(TATOEBA_CSV, HEISIG_CSV, max_frame)
-    found = ht.find_sentences(keyword, max_sentences, reverse)
-    ht.print_sentences(found, format)
+    known_chars = _resolve_known_chars(all_characters, known_set, known_file, max_known, max_frame)
+    corpus = TatoebaCorpus(TATOEBA_CSV)
+    found = corpus.find_sentences(keyword, known_chars=known_chars, max_sentences=max_sentences, reverse=reverse)
+    print_sentences(found, format)
 
 
 @click.command(name='random')
@@ -133,12 +115,40 @@ def sentences(
 @click.option(
     '-f', '--format', type=click.Choice(['csv', 'json', 'tabulate']), default='csv', help='Output format (default csv).'
 )
+@click.option(
+    '--known-set',
+    type=click.Choice(['heisig', 'hsk', 'file']),
+    default=None,
+    help='Known-character source (default: heisig).',
+)
+@click.option(
+    '--known-file',
+    type=click.Path(exists=True),
+    default=None,
+    help='Path to known-characters file (for --known-set file).',
+)
+@click.option(
+    '--max',
+    'max_known',
+    type=click.INT,
+    default=None,
+    help='Max frame/level for known-set (overrides --max-frame).',
+)
 def random_sentences(
-    max_frame: int, all_characters: bool, sentences_number: int, min_length: int, reverse: bool, format: str
+    max_frame: int,
+    all_characters: bool,
+    sentences_number: int,
+    min_length: int,
+    reverse: bool,
+    format: str,
+    known_set: str | None,
+    known_file: str | None,
+    max_known: int | None,
 ) -> None:
     """Returns random sentences from the Tatoeba corpus with the specified keyword"""
-    if all_characters:
-        max_frame = -1
-    ht = TatoebaHeisig(TATOEBA_CSV, HEISIG_CSV, max_frame)
-    found = ht.find_random_sentences(sentences_number, min_length, reverse)
-    ht.print_sentences(found, format)
+    known_chars = _resolve_known_chars(all_characters, known_set, known_file, max_known, max_frame)
+    corpus = TatoebaCorpus(TATOEBA_CSV)
+    found = corpus.find_random_sentences(
+        sentences_number, min_length=min_length, known_chars=known_chars, reverse=reverse
+    )
+    print_sentences(found, format)

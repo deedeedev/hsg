@@ -1,9 +1,8 @@
 import csv
-from operator import xor
 from typing import Any
 
 from hsg.classes.frequency import Frequency
-from hsg.utils.constants import HEISIG_CSV, RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV
+from hsg.utils.constants import RMW_FREQUENCIES_CHARS_CSV, RMW_FREQUENCIES_WORDS_CSV
 
 
 class RenMinWang(Frequency):
@@ -49,8 +48,8 @@ class RenMinWang(Frequency):
         self,
         type: str = 'chars',
         num: int = -1,
-        skip_heisig: bool = False,
-        only_heisig: bool = False,
+        skip_known: set[str] | None = None,
+        only_known: set[str] | None = None,
         min_length: int = 1,
         sort: str = 'rank',
         reverse: bool = False,
@@ -58,13 +57,9 @@ class RenMinWang(Frequency):
         lemmas = self.char_freq if type == 'chars' else self.word_freq
         if num == -1:
             num = len(lemmas)
-        if xor(skip_heisig, only_heisig):
-            with open(HEISIG_CSV) as f:
-                reader = csv.reader(f, delimiter='\t')
-                heisig_characters = [r[0] for r in reader]
-            if skip_heisig:
-                lemmas = [lemma for lemma in lemmas if lemma['lemma'] not in heisig_characters]
-            if only_heisig:
-                lemmas = [lemma for lemma in lemmas if lemma['lemma'] in heisig_characters]
+        if skip_known is not None:
+            lemmas = [lemma for lemma in lemmas if lemma['lemma'] not in skip_known]
+        if only_known is not None:
+            lemmas = [lemma for lemma in lemmas if lemma['lemma'] in only_known]
         data = sorted(lemmas, key=lambda x: x[sort], reverse=reverse)
         return data[:num]

@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use hsg in your research or coursework, please cite it as below."
+title: "hsg — Chinese text coverage analysis and comprehensible sentence mining"
+type: software
+authors:
+  - given-names: Davide
+    family-names: "N."
+repository-code: "https://github.com/davide/hsg"
+license: Apache-2.0
+version: "1.0.0"
+date-released: "2026-07-02"
+keywords:
+  - chinese
+  - hanzi
+  - heisig
+  - hsk
+  - tatoeba
+  - anki
+  - language-learning
+  - text-coverage

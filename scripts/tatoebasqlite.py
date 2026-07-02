@@ -12,10 +12,10 @@ class TatoebaSqlite:
 
     def __init__(self):
         self.create_db()
-    
+
     def create_db(self):
         self.db_engine = sql.create_engine(f'sqlite:///{TATOEBA_DB}', echo=True)
-    
+
     def create_db_tables(self):
         metadata = MetaData()
         zh_en = Table(
@@ -33,7 +33,7 @@ class TatoebaSqlite:
         except Exception as e:
             print('Error occurred during table creation.')
             print(e)
-    
+
     def populate_db(self) -> None:
         with open(TATOEBA_CSV) as f:
             reader = csv.reader(f, delimiter="\t")

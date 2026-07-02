@@ -9,13 +9,17 @@ repos:
     rev: v1.11.2
     hooks:
       - id: mypy
-        additional_dependencies: [types-tabulate, types-requests]
-        args: [--strict]
-        exclude: ^scripts/
+        additional_dependencies:
+          [types-tabulate, types-requests, click, rich, pypinyin, pytest]
+        args: [--strict, hsg]
+        pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
       - id: end-of-file-fixer
+        exclude: ^(assets/|\.vscode/|\.opencode/)
       - id: trailing-whitespace
+        exclude: ^assets/
       - id: mixed-line-ending
         args: [--fix=lf]
+        exclude: ^assets/

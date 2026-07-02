@@ -44,7 +44,7 @@ class Anki:
         if len(notes) > 0:
             return notes[0]
         return None
-    
+
     def get_data(self, hanzi):
         ids = self.find_notes(hanzi)
         if ids:
@@ -96,16 +96,16 @@ class PlecoDict:
                         'pinyin': row[1],
                         'text': row[2],
                     })
-    
+
     def italic(self, text):
         return self.PLECO_ITALIC_OPEN + text + self.PLECO_ITALIC_CLOSE
-    
+
     def altfont(self, text):
         return self.PLECO_ALTFONT_OPEN + text + self.PLECO_ALTFONT_CLOSE
-    
+
     def linkify(self, text):
         return self.PLECO_LINK_OPEN + text + self.PLECO_LINK_CLOSE
-    
+
     # replaces html tags with pleco special characters
     def normalize_mnemonic(self, mnemonic):
         mnemonic = mnemonic.replace('&nbsp;', ' ')
@@ -114,7 +114,7 @@ class PlecoDict:
         mnemonic = re.sub(r"\((.)\)", "(" + self.linkify(r"\1") + ")", mnemonic)
         mnemonic = re.sub(r"\((.),\s?(.)\)", "(" + self.linkify(r"\1") + ", " + self.linkify(r"\2") + ")", mnemonic)
         return mnemonic
-    
+
     # add mnemonic story
     def append_mnemonic(self, text, mnemonic):
         mnemonic = self.normalize_mnemonic(mnemonic)
@@ -122,7 +122,7 @@ class PlecoDict:
         parts = text.split(' $  ')
         parts.insert(len(parts)-1, mnemonic) # add mnemonic before NAVIGATION section
         return ' $  '.join(parts)
-    
+
     # add italian keyword and primitive meaning translations
     def append_translation(self, text, keyword_ita, primitive_ita):
         parts = text.split(' $  ')

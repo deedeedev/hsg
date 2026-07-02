@@ -7,12 +7,19 @@ from typing import Any
 
 
 class Frequency(metaclass=ABCMeta):
+    """ABC for character/word frequency corpora.
+
+    Backends: SubtlexCh (subtitle-based), RenMinWang (newspaper-based).
+    """
+
     @abstractmethod
     def find_char(self, char: str) -> dict[str, Any] | None:
+        """Look up frequency data for a single character. Returns None if not found."""
         raise NotImplementedError
 
     @abstractmethod
     def find_word(self, word: str) -> dict[str, Any] | None:
+        """Look up frequency data for a multi-character word. Returns None if not found."""
         raise NotImplementedError
 
     def get_most_frequent_lemmas(
@@ -25,4 +32,15 @@ class Frequency(metaclass=ABCMeta):
         sort: str = 'rank',
         reverse: bool = False,
     ) -> list[dict[str, Any]]:
+        """Return ranked lemmas, optionally filtered by known-set membership.
+
+        Args:
+            type: 'chars' or 'words'.
+            num: Max results (-1 = all).
+            skip_known: Exclude these characters.
+            only_known: Include only these characters.
+            min_length: Minimum lemma length.
+            sort: Sort key ('rank' or 'frequency').
+            reverse: Descending order if True.
+        """
         raise NotImplementedError

@@ -29,15 +29,18 @@ class StoryStore:
     """
 
     def __init__(self, filepath: str) -> None:
+        """Load stories from the JSON file at filepath."""
         self.filepath = filepath
         self._data: dict[str, dict[str, Any]] = {}
         self._load()
 
     def _load(self) -> None:
+        """Read and cache the JSON file into self._data."""
         with open(self.filepath) as f:
             self._data = json.load(f)
 
     def get_story(self, hanzi: str) -> dict[str, Any] | None:
+        """Return the story entry for hanzi, with HTML tags stripped. None if not found."""
         entry = self._data.get(hanzi)
         if entry is None:
             return None

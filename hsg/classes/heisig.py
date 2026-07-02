@@ -12,7 +12,15 @@ from hsg.utils.constants import ADDITIONAL_CHARACTERS, HEISIG_CSV
 
 
 class Heisig(KnownSet):
+    """KnownSet backed by Heisig Remembering the Hanzi (RSH) frame data.
+
+    Loads frame data from `assets/heisig.tsv`. A character is 'known' if its
+    frame number <= maxframe. Also provides frequency-enriched frame metadata
+    (keyword, pinyin, frequency rank) via the configured Frequency corpus.
+    """
+
     def __init__(self, frequencies_corpus: str, maxframe: int = -1) -> None:
+        """Initialise with a frequency corpus name and optional frame cap (-1 = all)."""
         self.maxframe = maxframe
         self.frequencies: Frequency = create_frequency(frequencies_corpus)
         self.heisig: dict[str, dict[str, Any]] = {}
@@ -20,9 +28,11 @@ class Heisig(KnownSet):
         self.known_characters: list[str] = self.get_known_characters()
 
     def set_max_frame(self, maxframe: int) -> None:
+        """Update the frame cap after construction."""
         self.maxframe = maxframe
 
     def load_heisig(self) -> None:
+        """Parse heisig.tsv into self.heisig, enriching each entry with frequency data."""
         with open(HEISIG_CSV) as f:
             reader = csv.reader(f, delimiter='\t')
             for row in reader:
@@ -45,21 +55,27 @@ class Heisig(KnownSet):
             self.maxframe = max([f['frame'] for f in self.heisig.values()])
 
     def get_known_frames(self) -> list[str]:
+        """Return hanzi whose frame number <= maxframe."""
         return [hanzi for hanzi in self.heisig if self.heisig[hanzi]['frame'] <= self.maxframe]
 
     def get_known_characters(self) -> list[str]:
+        """Return known frames plus ADDITIONAL_CHARACTERS."""
         return self.get_known_frames() + list(ADDITIONAL_CHARACTERS)
 
     def is_known(self, char: str) -> bool:
+        """Return True if char is in the known set (frame <= maxframe or additional)."""
         return char in self.known_characters
 
     def get_char_info(self, char: str) -> dict[str, Any]:
+        """Return the full frame metadata dict for a character."""
         return self.heisig[char]
 
     def get_frame_info(self, char: str) -> dict[str, Any]:
+        """Alias for get_char_info (kept for backward compatibility)."""
         return self.get_char_info(char)
 
     def output(self, words: list[dict[str, Any]], format: str) -> None:
+        """Print frame data in the specified format (csv, json, tabulate)."""
         if format == 'csv':
             fields = ('hanzi', 'frame', 'keyword', 'pinyin', 'frequency')
             writer: csv.DictWriter[str] = csv.DictWriter(

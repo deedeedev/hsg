@@ -6,6 +6,12 @@ from hsg.utils.constants import SUBTLEX_CH_CHARS_CSV, SUBTLEX_CH_WORDS_CSV, SUBT
 
 
 class SubtlexCh(Frequency):
+    """Frequency corpus based on SUBTLEX-CH (Chinese film subtitle) data.
+
+    Provides character and word frequency, including part-of-speech data,
+    from the subtlex-ch/ assets. Source: https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexch/
+    """
+
     FIELDS: list[str] = [
         'lemma',
         'count',
@@ -82,6 +88,7 @@ class SubtlexCh(Frequency):
     }
 
     def __init__(self) -> None:
+        """Load character, word, and word+POS frequency CSVs."""
         self.char_freq: list[dict[str, Any]] = self.load_csv(SUBTLEX_CH_CHARS_CSV, self.FIELDS)
         self.word_freq: list[dict[str, Any]] = self.load_csv(SUBTLEX_CH_WORDS_CSV, self.FIELDS)
         self.word_pos_freq: list[dict[str, Any]] = self.load_csv(SUBTLEX_CH_WORDS_POS_COMBINED_CSV, self.FIELDS_POS)
@@ -90,6 +97,7 @@ class SubtlexCh(Frequency):
         self.words_pos: dict[str, Any] = self.create_dict(self.word_pos_freq)
 
     def load_csv(self, csvfile: str, fields: list[str]) -> list[dict[str, Any]]:
+        """Parse a SUBTLEX-CH CSV with the given field names."""
         with open(csvfile) as f:
             reader = csv.DictReader(f, fieldnames=fields, delimiter='\t')
             reader_no_headers = list(reader)[3:]  # skip first 3 lines
@@ -99,18 +107,22 @@ class SubtlexCh(Frequency):
             return reader_no_headers
 
     def create_dict(self, lemmas: list[dict[str, Any]]) -> dict[str, Any]:
+        """Build a lemma-to-record lookup dict from a list."""
         result: dict[str, Any] = {}
         for lemma in lemmas:
             result[lemma['lemma']] = lemma
         return result
 
     def find_char(self, char: str) -> dict[str, Any] | None:
+        """Look up frequency data for a character. Returns None if not found."""
         return self.chars.get(char)
 
     def find_word(self, word: str) -> dict[str, Any] | None:
+        """Look up frequency data for a word. Returns None if not found."""
         return self.words.get(word)
 
     def find_pos(self, word: str) -> tuple[str, dict[str, int]] | None:
+        """Return the dominant part of speech and POS frequency counts for a word."""
         data = self.words_pos.get(word)
         if data:
             all_pos = [p for p in data['all_pos'].split('.') if p]
@@ -120,6 +132,7 @@ class SubtlexCh(Frequency):
         return None
 
     def get_words_by_pos(self, pos: str, strict: bool = True) -> list[dict[str, Any]]:
+        """Return words matching a part-of-speech code."""
         if strict:
             return [w for w in self.word_pos_freq if w['dominant_pos'] == pos]
         return [w for w in self.word_pos_freq if pos in [p.lower() for p in w['all_pos'].split('.')]]
@@ -134,6 +147,7 @@ class SubtlexCh(Frequency):
         sort: str = 'rank',
         reverse: bool = False,
     ) -> list[dict[str, Any]]:
+        """Return ranked lemmas, optionally filtered by known-set membership."""
         lemmas = self.char_freq if type == 'chars' else self.word_freq
         if num == -1:
             num = len(lemmas)

@@ -15,6 +15,10 @@ Sentence = dict[str, str | list[str]]
 
 
 def print_sentences(sentences: list[Sentence], format: str) -> None:
+    """Print sentence results in the specified format (csv, json, tabulate).
+
+    Enriches each sentence with pinyin before printing.
+    """
     for s in sentences:
         s['pinyin'] = ' '.join([p[0] for p in pinyin(s['hanzi'])])
     if format == 'csv':
@@ -36,7 +40,11 @@ def _resolve_known_chars(
     max_known: int | None,
     max_frame: int,
 ) -> set[str] | None:
-    """Resolve the known-chars set, or None for no filtering."""
+    """Resolve the known-character set for sentence filtering.
+
+    Returns None if all_characters is True (no filtering).
+    Otherwise, creates a KnownSet via the factory and returns its character set.
+    """
     if all_characters:
         return None
     ks_backend = known_set or 'heisig'

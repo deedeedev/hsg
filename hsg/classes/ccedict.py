@@ -20,13 +20,23 @@ logger = logging.getLogger(__name__)
 
 
 class QueryType(Enum):
+    """Query classification for CC-CEDICT search: simplified, pinyin, or english."""
+
     SIMPLIFIED = 'simplified'
     PINYIN = 'pinyin'
     ENGLISH = 'english'
 
 
 class Ccedict:
+    """CC-CEDICT dictionary reader with HSK and frequency enrichment.
+
+    Loads the dictionary from a cedict_ts.u8 file (or a pickled cache).
+    Supports search by simplified characters, pinyin, or English gloss,
+    with optional HSK-level and frequency-rank filtering/sorting.
+    """
+
     def __init__(self, cedictfile: str, frequencies_corpus: str) -> None:
+        """Load the CC-CEDICT dictionary and initialise HSK + frequency backends."""
         self.cedictfile: str = cedictfile
         self.dictionary: list[dict[str, Any]] = []
         self.fq: Frequency = create_frequency(frequencies_corpus)
@@ -35,6 +45,7 @@ class Ccedict:
         self.load_dict()
 
     def load_dict(self) -> None:
+        """Load the dictionary from pickle cache or parse the raw .u8 file."""
         pickle_dict = os.path.join(ASSETS_DIR_PATH, 'ccedict.pickle')
         if os.path.isfile(pickle_dict):
             with open(pickle_dict, 'rb') as d:
@@ -54,6 +65,7 @@ class Ccedict:
                 pickle.dump(self.dictionary, d)
 
     def parse_line(self, line: str) -> None:
+        """Parse a single CC-CEDICT line and append to self.dictionary."""
         if line == '':
             self.dict_lines.remove(line)
             return
@@ -77,12 +89,14 @@ class Ccedict:
         )
 
     def remove_surnames(self) -> None:
+        """Filter out surname entries from the dictionary."""
         for x in range(len(self.dictionary) - 1, -1, -1):
             entry = self.dictionary[x]
             if 'surname ' in entry['english'] and entry['traditional'] == self.dictionary[x + 1]['traditional']:
                 self.dictionary.pop(x)
 
     def get_query_type(self, query: str) -> str:
+        """Classify a query string as 'simplified', 'pinyin', or 'english'."""
         pattern_hanzi: re.Pattern[str] = re.compile(
             '^[^' + ADDITIONAL_CHARACTERS.replace('[', r'\[').replace(']', r'\]') + ']*$'
         )
@@ -94,7 +108,6 @@ class Ccedict:
         else:
             return QueryType.ENGLISH.value
 
-    # finds all lemmas containing specific character(s)
     def search(
         self,
         query: str,
@@ -107,6 +120,7 @@ class Ccedict:
         max_results: int,
         all_results: bool,
     ) -> None:
+        """Search the dictionary and print results in the chosen format."""
         search_field: str = self.get_query_type(query)
         query = query.replace(' ', '').lower()
 
@@ -135,11 +149,13 @@ class Ccedict:
         self.output(words, format)
 
     def sort_key(self, value: str | int) -> int:
+        """Return a numeric sort key for HSK level or frequency rank."""
         if value == '7-9':
             return 7
         return int(value) if value else sys.maxsize
 
     def output(self, words: list[dict[str, Any]], format: str) -> None:
+        """Print search results in the specified format (csv, json, tabulate)."""
         if format == 'csv':
             writer: csv.DictWriter[str] = csv.DictWriter(
                 sys.stdout, fieldnames=list(words[0].keys()), delimiter='\t', extrasaction='ignore'

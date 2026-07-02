@@ -9,16 +9,20 @@ from tabulate import tabulate
 
 
 class Writer(metaclass=ABCMeta):
+    """ABC for output writers (CSV, JSON, tabulate)."""
+
     @abstractmethod
     def writerow(self, rowdata: list[Any]) -> None:
-        pass
+        """Write a single row."""
 
     @abstractmethod
     def writerows(self, data: list[list[Any]]) -> None:
-        pass
+        """Write multiple rows with headers."""
 
 
 class CsvWriter(Writer):
+    """TSV writer (tab-delimited CSV to stdout)."""
+
     def __init__(self, headers: list[str]) -> None:
         self.headers = headers
         self.writer = csv.writer(sys.stdout, delimiter='\t')
@@ -33,6 +37,8 @@ class CsvWriter(Writer):
 
 
 class JsonWriter(Writer):
+    """JSON-lines writer (one JSON object per row, or a JSON array for writerows)."""
+
     def __init__(self, keys: list[str]) -> None:
         self.keys = keys
 
@@ -46,6 +52,8 @@ class JsonWriter(Writer):
 
 
 class TabulateWriter(Writer):
+    """Pretty-printed table writer using the tabulate library."""
+
     def __init__(self, headers: list[str]) -> None:
         self.headers = headers
 
@@ -56,6 +64,7 @@ class TabulateWriter(Writer):
         print(tabulate(data, headers=self.headers, tablefmt='github'))
 
 
+# Registry of output format name -> Writer class.
 WRITERS: dict[str, type[Writer]] = {
     'csv': CsvWriter,
     'json': JsonWriter,
@@ -64,6 +73,7 @@ WRITERS: dict[str, type[Writer]] = {
 
 
 def validate_fields(ctx: Any, param: Any, fields: list[str] | str) -> list[str]:
+    """Click callback that validates requested output field names against the known set."""
     valid = True
     unsupported_fields: list[str] = []
     if isinstance(fields, str):

@@ -66,6 +66,12 @@ uvx hsg parse "你好世界" --known-set hsk --max 3 -t tabulate
 
 ## Installation
 
+### Homebrew (macOS / Linux)
+
+```bash
+brew install davide/hsg/hsg
+```
+
 ### pipx (recommended)
 
 ```bash

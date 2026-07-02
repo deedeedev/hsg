@@ -1,0 +1,56 @@
+name: Update Homebrew formula
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to update formula to"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  update-brew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout homebrew-hsg tap
+        uses: actions/checkout@v4
+        with:
+          repository: davide/homebrew-hsg
+          token: ${{ secrets.BREW_TAP_PAT }}
+          path: homebrew-hsg
+
+      - name: Compute SHA256 of release tarball
+        id: hash
+        run: |
+          TAG="${{ github.event.release.tag_name || inputs.tag }}"
+          URL="https://github.com/davide/hsg/archive/refs/tags/${TAG}.tar.gz"
+          SHA=$(curl -sL "$URL" | sha256sum | cut -d' ' -f1)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Update formula
+        run: |
+          TAG="${{ steps.hash.outputs.tag }}"
+          SHA="${{ steps.hash.outputs.sha256 }}"
+          RUBY_FILE="homebrew-hsg/Formula/hsg.rb"
+
+          # Update version to tag (strip leading v)
+          VERSION="${TAG#v}"
+          sed -i "s/^  url .*/  url \"https:\/\/github.com\/davide\/hsg\/archive\/refs\/tags\/${TAG}.tar.gz\"/" "$RUBY_FILE"
+          sed -i "s/^  sha256 .*/  sha256 \"${SHA}\"/" "$RUBY_FILE"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          path: homebrew-hsg
+          token: ${{ secrets.BREW_TAP_PAT }}
+          commit-message: "chore: update hsg to ${{ steps.hash.outputs.tag }}"
+          title: "Update hsg to ${{ steps.hash.outputs.tag }}"
+          body: "Automated update of the hsg Homebrew formula to ${{ steps.hash.outputs.tag }}."
+          branch: update-hsg-${{ steps.hash.outputs.tag }}
+          delete-branch: true

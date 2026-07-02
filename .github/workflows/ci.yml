@@ -39,3 +39,28 @@ jobs:
 
       - name: Pytest with coverage
         run: pytest --cov=hsg --cov-report=term --cov-fail-under=70
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        run: pip install uv
+      - name: Build
+        run: uv build
+      - name: Verify wheel
+        run: |
+          uv pip install --system dist/*.whl
+          hsg --help
+          hsg parse "\u4f60\u597d\u4e16\u754c" --known-set hsk --max 1
+      - name: Simulate uvx (from local wheel)
+        run: |
+          uv tool install dist/*.whl --name hsg
+          hsg --help
+          uv tool uninstall hsg
+      - name: Check sdist contains all expected files
+        run: |
+          tar tf dist/*.tar.gz | sort | head -30

@@ -1,0 +1,20 @@
+# Maintainer: Davide <davide@example.com>
+# Contributor: Davide <davide@example.com>
+
+pkgname=hsg
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Chinese text coverage analysis and comprehensible sentence mining"
+arch=('any')
+url="https://github.com/davide/hsg"
+license=('Apache')
+depends=('python' 'python-click' 'python-rich' 'python-tabulate' 'python-pypinyin' 'python-requests')
+makedepends=('python-build' 'python-installer' 'python-wheel')
+source=("${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('REPLACE_WITH_ACTUAL_SHA256')
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    python -m build --no-isolation --wheel
+    python -m installer --destdir="$pkgdir" dist/*.whl
+}

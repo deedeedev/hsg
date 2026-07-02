@@ -46,3 +46,12 @@ class TestParse:
         result = runner.invoke(app, ['parse', '一二三', '-v', '-t', 'json', '-m', '5'])
         assert result.exit_code == 0
         assert 'Known characters:' in result.output
+
+    def test_parse_known_set_hsk(self, patched_constants, runner: CliRunner, app):
+        result = runner.invoke(app, ['parse', '一二四', '--known-set', 'hsk', '--max', '1', '-t', 'json'])
+        assert result.exit_code == 0
+        data = json.loads(result.output.strip())
+        known_chars = [d for d in data if d['known'] != '*']
+        unknown_chars = [d for d in data if d['known'] == '*']
+        assert any(d['hanzi'] == '一' for d in known_chars)
+        assert any(d['hanzi'] == '四' for d in unknown_chars)

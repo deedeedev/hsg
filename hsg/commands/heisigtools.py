@@ -14,6 +14,7 @@ from rich import print
 
 from hsg.classes.heisig import Heisig
 from hsg.classes.hsk import HSK
+from hsg.classes.knownset_factory import create_known_set
 from hsg.utils.io import get_input
 from hsg.utils.writers import WRITERS, validate_fields
 
@@ -112,6 +113,25 @@ def stories(text: str | None, file: Any) -> None:
 @click.argument('text', required=False)
 @click.option('-f', '--file', type=click.File('r'), default=sys.stdin)
 @click.option('-m', '--max-frame', type=click.INT, default=-1, help='Max Heisig frame known.')
+@click.option(
+    '--known-set',
+    type=click.Choice(['heisig', 'hsk', 'file']),
+    default=None,
+    help='Known-character source (default: heisig).',
+)
+@click.option(
+    '--known-file',
+    type=click.Path(exists=True),
+    default=None,
+    help='Path to known-characters file (for --known-set file).',
+)
+@click.option(
+    '--max',
+    'max_known',
+    type=click.INT,
+    default=None,
+    help='Max frame/level for known-set (overrides --max-frame).',
+)
 @click.option('-o', '--only-known', required=False, is_flag=True, help='Print only known frames.')
 @click.option('-u', '--only-unknown', required=False, is_flag=True, help='Print only unknown frames.')
 @click.option('-q', '--unique', required=False, is_flag=True, help='Print every character only once.')
@@ -154,6 +174,9 @@ def parse(
     text: str | None,
     file: Any,
     max_frame: int,
+    known_set: str | None,
+    known_file: str | None,
+    max_known: int | None,
     only_known: bool,
     only_unknown: bool,
     unique: bool,
@@ -167,7 +190,16 @@ def parse(
     """Parses a text and returns a list of Heisig frames.
 
     If no text is passed as argument fallbacks to stdin then clipboard"""
-    hsg = Heisig(frequencies_corpus, max_frame)
+    ks_backend = known_set or 'heisig'
+    ks_max = max_known if max_known is not None else max_frame
+
+    if ks_backend == 'file':
+        if not known_file:
+            raise click.UsageError('--known-set file requires --known-file')
+        hsg = create_known_set('file', filepath=known_file)
+    else:
+        hsg = create_known_set(ks_backend, max=ks_max, frequencies_corpus=frequencies_corpus)
+
     hsk = HSK()
     input_text = get_input(text, file)
     chars = [c for c in input_text.replace('\r', '').replace('\n', '').strip() if not hsg.is_additional_character(c)]
@@ -181,7 +213,10 @@ def parse(
     elif only_known:
         chars = [c for c in chars if hsg.is_known(c)]
     if sort == 'frame' or sort == 'frequency':
-        chars = sorted(chars, key=lambda x: hsg.get_frame_info(x)[sort] if x in hsg.heisig else 100000, reverse=reverse)
+        if isinstance(hsg, Heisig):
+            chars = sorted(
+                chars, key=lambda x: hsg.get_char_info(x)[sort] if x in hsg.heisig else 100000, reverse=reverse
+            )
     elif sort == 'occurrencies':
         chars = sorted(chars, key=lambda x: statistics['frequencies'][x]['occurrencies'], reverse=not reverse)
 
@@ -192,8 +227,8 @@ def parse(
             f'{statistics["frequencies"][char]["occurrencies"]} ({statistics["frequencies"][char]["percent"]}%)'
         )
         hsk_level = hsk.get_hsk_new_char_level(char) if hsk.get_hsk_new_char_level(char) else ''
-        if char in hsg.heisig:
-            info = hsg.get_frame_info(char)
+        if isinstance(hsg, Heisig) and char in hsg.heisig:
+            info = hsg.get_char_info(char)
             item = {
                 'known': '' if hsg.is_known(char) else '*',
                 'hanzi': info['hanzi'],
@@ -205,8 +240,9 @@ def parse(
                 'occurrencies': occurrencies,
             }
         else:
+            known_val = 'NA' if isinstance(hsg, Heisig) else ('' if hsg.is_known(char) else '*')
             item = {
-                'known': 'NA',
+                'known': known_val,
                 'hanzi': char,
                 'frame': '',
                 'frequency': '',

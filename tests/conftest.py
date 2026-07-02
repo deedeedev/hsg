@@ -163,7 +163,6 @@ def patched_constants(monkeypatch: pytest.MonkeyPatch, assets_dir: Path) -> Path
         # hsg.classes.ccedict (ASSETS_DIR_PATH used for pickle path)
         'hsg.classes.ccedict.ASSETS_DIR_PATH': ad,
         # hsg.commands.heisigtatoeba
-        'hsg.commands.heisigtatoeba.HEISIG_CSV': os.path.join(ad, 'heisig.tsv'),
         'hsg.commands.heisigtatoeba.TATOEBA_CSV': os.path.join(ad, 'tatoeba.tsv'),
         # hsg.commands.ccedictsearch
         'hsg.commands.ccedictsearch.CCEDICT_CSV': os.path.join(ad, 'cedict_ts.u8'),

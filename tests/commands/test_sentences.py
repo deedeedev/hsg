@@ -23,3 +23,9 @@ class TestSentences:
         assert result.exit_code == 0
         data = json.loads(result.output.strip(), strict=False)
         assert len(data) > 0
+
+    def test_sentences_known_set_hsk(self, patched_constants, runner: CliRunner, app):
+        result = runner.invoke(app, ['sentences', '一', '--known-set', 'hsk', '--max', '2', '-f', 'json'])
+        assert result.exit_code == 0
+        data = json.loads(result.output.strip(), strict=False)
+        assert len(data) > 0

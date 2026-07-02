@@ -15,7 +15,7 @@ from hsg.logging_setup import configure_logging
     help='Logging verbosity (default: warning).',
 )
 def cli(log_level: str) -> None:
-    """hsg — Heisig + Tatoeba CLI tool."""
+    """hsg — Chinese text coverage analysis and sentence mining CLI."""
     configure_logging(log_level)
 
 

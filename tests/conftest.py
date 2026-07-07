@@ -34,6 +34,14 @@ HSK_NEW_CSV = (
     '2,0005,五,wu3,five\n'
 )
 
+# 9-column CSV matching the real assets/hsk_new.csv format
+HSK_NEW_CSV_REAL = (
+    'level,num,simplified,pinyin,definitions,pos,example,alternative,multiple\n'
+    '1,0001,一,yi1,one; 1,n,,,,,\n'
+    '1,0002,二,er4,two; 2,n,,,,,\n'
+    '2,0003,三,san1,three; 3,n,,,,,\n'
+)
+
 HSK_OLD_CSV = (
     'Level\tIdentifier\tHanzi\tPinYin\tTranslations\n'
     '1\t1\t一\tyi1\tone, 1\n'
@@ -120,6 +128,7 @@ def assets_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     d = tmp_path_factory.mktemp('assets')
     (d / 'heisig.tsv').write_text(HEISIG_TSV)
     (d / 'hsk_new.csv').write_text(HSK_NEW_CSV)
+    (d / 'hsk_new_real.csv').write_text(HSK_NEW_CSV_REAL)
     (d / 'hsk_old.csv').write_text(HSK_OLD_CSV)
     (d / 'tatoeba.tsv').write_text(TATOEBA_TSV)
     (d / 'cedict_ts.u8').write_text(CEDICT_U8)

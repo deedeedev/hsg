@@ -45,13 +45,13 @@ class HSK:
             reader = csv.reader(f, delimiter=',')
             next(reader)
             for row in reader:
-                level, num, simplified, pinyin, translations = row
+                level, num, simplified, pinyin, definitions, *_rest = row
                 self.hsk_new[simplified] = {
                     'level': level,
                     'num': int(num),
                     'simplified': simplified,
                     'pinyin': pinyin,
-                    'translations': translations,
+                    'translations': definitions,
                 }
                 for c in simplified:
                     if c not in ADDITIONAL_CHARACTERS and c not in self.hsk_new_chars:

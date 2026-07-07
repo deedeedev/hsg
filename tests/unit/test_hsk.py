@@ -37,3 +37,16 @@ class TestHSK:
         h = HSK()
         all_new = h.get_hsk_new_words(None)
         assert len(all_new) == 5
+
+    def test_load_real_format_9_cols(self, patched_constants, assets_dir, monkeypatch):
+        """Real assets/hsk_new.csv has 9 cols; loader must accept extra columns."""
+        import os
+
+        monkeypatch.setattr('hsg.classes.hsk.HSK_NEW_CSV', os.path.join(str(assets_dir), 'hsk_new_real.csv'))
+        h = HSK()
+        assert h.get_hsk_new_word_level('一') == '1'
+        assert h.get_hsk_new_word_level('三') == '2'
+        assert h.get_hsk_new_word_level('十') is None
+        word = h.get_hsk_new_word('一')
+        assert word is not None
+        assert word['translations'] == 'one; 1'

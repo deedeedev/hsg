@@ -5,6 +5,20 @@ from hsg.classes.knownset import KnownSet
 from hsg.utils.constants import ADDITIONAL_CHARACTERS
 
 
+def _parse_level(level: str | None) -> int:
+    """Parse an HSK level string into an int for max_level comparison.
+
+    Newer HSK 3.0 rows use a range like '7-9'; we treat the lower bound
+    as the level (permissive: char is 'known' at max_level >= lower bound).
+    Empty/None maps to 99 (effectively unknown).
+    """
+    if not level:
+        return 99
+    if '-' in level:
+        return int(level.split('-', 1)[0])
+    return int(level)
+
+
 class HSKKnownSet(KnownSet):
     """KnownSet backed by HSK levels.
 
@@ -21,9 +35,9 @@ class HSKKnownSet(KnownSet):
     def _compute_known_chars(self) -> list[str]:
         if self.use_old:
             chars = self.hsk.get_hsk_old_chars()
-            return [c for c in chars if int(self.hsk.get_hsk_old_char_level(c) or 99) <= self.max_level]
+            return [c for c in chars if _parse_level(self.hsk.get_hsk_old_char_level(c)) <= self.max_level]
         chars = self.hsk.get_hsk_new_chars()
-        return [c for c in chars if int(self.hsk.get_hsk_new_char_level(c) or 99) <= self.max_level]
+        return [c for c in chars if _parse_level(self.hsk.get_hsk_new_char_level(c)) <= self.max_level]
 
     def is_known(self, char: str) -> bool:
         return char in self._known_chars or char in ADDITIONAL_CHARACTERS

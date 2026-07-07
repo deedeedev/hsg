@@ -1,4 +1,4 @@
-from hsg.classes.hsk_knownset import HSKKnownSet
+from hsg.classes.hsk_knownset import HSKKnownSet, _parse_level
 
 
 class TestHSKKnownSet:
@@ -28,3 +28,17 @@ class TestHSKKnownSet:
         stats = ks.get_statistics(['一', '二', '四'])
         assert stats['chars'] == 3
         assert stats['known'] == 2  # 一,二 are level 1; 四 is level 2
+
+
+class TestParseLevel:
+    def test_int_level(self):
+        assert _parse_level('1') == 1
+        assert _parse_level('6') == 6
+
+    def test_range_level_permissive(self):
+        # '7-9' → 7 (lower bound: char is 'known' at max_level >= 7)
+        assert _parse_level('7-9') == 7
+
+    def test_empty_or_none(self):
+        assert _parse_level(None) == 99
+        assert _parse_level('') == 99

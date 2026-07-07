@@ -63,6 +63,9 @@ hsg = "hsg.cli:cli"
 [tool.hatch.build.targets.wheel]
 packages = ["hsg"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"assets" = "assets"
+
 [tool.ruff]
 line-length = 120
 target-version = "py310"

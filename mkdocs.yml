@@ -1,8 +1,8 @@
 site_name: hsg documentation
 site_description: Chinese text coverage analysis and comprehensible sentence mining.
-site_url: https://davide.github.io/hsg/
-repo_url: https://github.com/davide/hsg
-repo_name: davide/hsg
+site_url: https://deedeedev.github.io/hsg/
+repo_url: https://github.com/deedeedev/hsg
+repo_name: deedeedev/hsg
 
 theme:
   name: material

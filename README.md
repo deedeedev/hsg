@@ -7,7 +7,7 @@ Chinese text against your **known-character set** (Heisig RTK frames, HSK
 levels, a custom file, or an Anki export), reports coverage statistics, mines
 comprehensible example sentences from Tatoeba, and looks up CC-CEDICT entries.
 
-[![CI](https://github.com/davide/hsg/actions/workflows/ci.yml/badge.svg)](https://github.com/davide/hsg/actions/workflows/ci.yml)
+[![CI](https://github.com/deedeedev/hsg/actions/workflows/ci.yml/badge.svg)](https://github.com/deedeedev/hsg/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/hsg.svg)](https://pypi.org/project/hsg/)
@@ -69,7 +69,7 @@ uvx hsg parse "你好世界" --known-set hsk --max 3 -t tabulate
 ### Homebrew (macOS / Linux)
 
 ```bash
-brew install davide/hsg/hsg
+brew install deedeedev/hsg/hsg
 ```
 
 ### pipx (recommended)
@@ -99,7 +99,7 @@ uvx hsg --help
 ### From source
 
 ```bash
-git clone https://github.com/davide/hsg.git
+git clone https://github.com/deedeedev/hsg.git
 cd hsg
 uv pip install -e ".[dev]"
 ```
@@ -233,7 +233,7 @@ python -m hsg --help                       # module invocation
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports and feature requests are
-welcome via [GitHub Issues](https://github.com/davide/hsg/issues).
+welcome via [GitHub Issues](https://github.com/deedeedev/hsg/issues).
 
 ## License
 

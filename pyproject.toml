@@ -34,11 +34,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/davide/hsg"
-Repository = "https://github.com/davide/hsg"
-Documentation = "https://davide.github.io/hsg/"
-Issues = "https://github.com/davide/hsg/issues"
-Changelog = "https://github.com/davide/hsg/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/deedeedev/hsg"
+Repository = "https://github.com/deedeedev/hsg"
+Documentation = "https://deedeedev.github.io/hsg/"
+Issues = "https://github.com/deedeedev/hsg/issues"
+Changelog = "https://github.com/deedeedev/hsg/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 clipboard = ["clipboard>=0.0.4"]

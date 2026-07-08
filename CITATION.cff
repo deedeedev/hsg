@@ -5,7 +5,7 @@ type: software
 authors:
   - given-names: Davide
     family-names: "N."
-repository-code: "https://github.com/davide/hsg"
+repository-code: "https://github.com/deedeedev/hsg"
 license: Apache-2.0
 version: "1.0.0"
 date-released: "2026-07-02"

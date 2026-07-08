@@ -5,7 +5,7 @@ Thanks for your interest in contributing! This guide covers the basics.
 ## Development setup
 
 ```bash
-git clone https://github.com/davide/hsg.git
+git clone https://github.com/deedeedev/hsg.git
 cd hsg
 uv pip install -e ".[dev]"
 pre-commit install

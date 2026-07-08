@@ -20,7 +20,7 @@ jobs:
       - name: Checkout homebrew-hsg tap
         uses: actions/checkout@v4
         with:
-          repository: davide/homebrew-hsg
+          repository: deedeedev/homebrew-hsg
           token: ${{ secrets.BREW_TAP_PAT }}
           path: homebrew-hsg
 
@@ -28,7 +28,7 @@ jobs:
         id: hash
         run: |
           TAG="${{ github.event.release.tag_name || inputs.tag }}"
-          URL="https://github.com/davide/hsg/archive/refs/tags/${TAG}.tar.gz"
+          URL="https://github.com/deedeedev/hsg/archive/refs/tags/${TAG}.tar.gz"
           SHA=$(curl -sL "$URL" | sha256sum | cut -d' ' -f1)
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
@@ -41,7 +41,7 @@ jobs:
 
           # Update version to tag (strip leading v)
           VERSION="${TAG#v}"
-          sed -i "s/^  url .*/  url \"https:\/\/github.com\/davide\/hsg\/archive\/refs\/tags\/${TAG}.tar.gz\"/" "$RUBY_FILE"
+          sed -i "s/^  url .*/  url \"https:\/\/github.com\/deedeedev\/hsg\/archive\/refs\/tags\/${TAG}.tar.gz\"/" "$RUBY_FILE"
           sed -i "s/^  sha256 .*/  sha256 \"${SHA}\"/" "$RUBY_FILE"
 
       - name: Create pull request

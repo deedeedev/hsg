@@ -58,7 +58,7 @@ jobs:
           hsg parse "\u4f60\u597d\u4e16\u754c" --known-set hsk --max 1
       - name: Simulate uvx (from local wheel)
         run: |
-          uv tool install dist/*.whl --name hsg
+          uv tool install dist/*.whl
           hsg --help
           uv tool uninstall hsg
       - name: Check sdist contains all expected files

@@ -13,16 +13,3 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: google-github-actions/release-please-action@v4
-        with:
-          release-type: python
-          package-name: hsg
-          changelog-types: |
-            feat: Features
-            fix: Bug Fixes
-            refactor: Code Refactoring
-            perf: Performance
-            docs: Documentation
-            test: Tests
-            build: Build System
-            ci: CI
-            chore: Maintenance

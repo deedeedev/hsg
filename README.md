@@ -69,7 +69,7 @@ uvx hsg parse "你好世界" --known-set hsk --max 3 -t tabulate
 ### Homebrew (macOS / Linux)
 
 ```bash
-brew install deedeedev/hsg/hsg
+brew install deedeedev/hsg
 ```
 
 ### pipx (recommended)

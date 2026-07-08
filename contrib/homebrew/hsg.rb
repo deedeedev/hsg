@@ -1,6 +1,4 @@
 class Hsg < Formula
-  include Language::Python::Virtualenv
-
   desc "Chinese text coverage analysis and comprehensible sentence mining"
   homepage "https://github.com/deedeedev/hsg"
   url "https://github.com/deedeedev/hsg/archive/refs/tags/v1.0.0.tar.gz"
@@ -10,7 +8,11 @@ class Hsg < Formula
   depends_on "python@3.12"
 
   def install
-    virtualenv_install
+    python = Formula["python@3.12"].opt_bin/"python3.12"
+    system python, "-m", "venv", libexec
+    system libexec/"bin/pip", "install", "--upgrade", "pip"
+    system libexec/"bin/pip", "install", "."
+    bin.install_symlink libexec/"bin/hsg"
   end
 
   test do

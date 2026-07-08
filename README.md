@@ -78,6 +78,12 @@ brew install davide/hsg/hsg
 pipx install hsg
 ```
 
+### uv tool
+
+```bash
+uv tool install hsg
+```
+
 ### pip
 
 ```bash

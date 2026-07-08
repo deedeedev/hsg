@@ -59,5 +59,6 @@ def search(
     max_results: int,
     all_results: bool,
 ) -> None:
+    """Searches the CC-CEDICT dictionary for a query string."""
     ce: Ccedict = Ccedict(CCEDICT_CSV, frequencies_corpus)
     ce.search(query, exact, show_traditional, format, sort, reverse, max_hsk, max_results, all_results)

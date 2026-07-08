@@ -91,6 +91,7 @@ def search(
     frequencies_corpus: str,
     format: str,
 ) -> None:
+    """Returns most frequent characters or words, optionally filtered to a known-set or input text."""
     fq: Frequency = create_frequency(frequencies_corpus)
 
     if skip_known or only_known:

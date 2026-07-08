@@ -7,7 +7,7 @@ class TestOutputFormats:
     def test_list_csv_snapshot(self, patched_constants, runner: CliRunner, app):
         result = runner.invoke(app, ['list', '--min', '1', '--max', '3', '-f', 'csv'])
         assert result.exit_code == 0
-        lines = result.output.strip().split('\n')
+        lines = result.output.strip().splitlines()
         assert lines[0] == 'hanzi\tframe\tkeyword\tpinyin\tfrequency'
         assert lines[1].startswith('一\t1\tOne\tyi1\t')
         assert lines[2].startswith('二\t2\tTwo\ter4\t')

@@ -38,6 +38,8 @@ jobs:
         run: mypy --strict hsg
 
       - name: Pytest with coverage
+        env:
+          PYTHONIOENCODING: utf-8
         run: pytest --cov=hsg --cov-report=term --cov-fail-under=70
 
   build:
